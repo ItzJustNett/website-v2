@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
@@ -15,6 +15,7 @@ import Link from "next/link"
 
 interface Lesson {
   id: string
+  lesson_id: string
   title: string
   description?: string
   content?: string
@@ -23,12 +24,47 @@ interface Lesson {
   xp_reward?: number
   course_id?: string
   youtube_link?: string
-  video_url?: string
+  exercises?: Exercise[]
+  created_at?: string
+}
+
+interface Exercise {
+  exercise_id: string
+  question: string
+  options: string[]
+  correct_option: number
+}
+
+// Helper function to convert YouTube URL to embed URL
+function getYouTubeEmbedUrl(url: string): string {
+  if (!url) return ""
+
+  // Handle various YouTube URL formats
+  let videoId = ""
+
+  // youtu.be format
+  if (url.includes("youtu.be/")) {
+    videoId = url.split("youtu.be/")[1].split("?")[0]
+  }
+  // youtube.com watch format
+  else if (url.includes("youtube.com/watch")) {
+    const params = new URL(url).searchParams
+    videoId = params.get("v") || ""
+  }
+  // Already embed format
+  else if (url.includes("youtube.com/embed/")) {
+    videoId = url.split("youtube.com/embed/")[1].split("?")[0]
+  }
+  // youtube-nocookie embed format
+  else if (url.includes("youtube-nocookie.com/embed/")) {
+    return url
+  }
+
+  return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : url
 }
 
 export default function LessonDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const lessonId = params?.id as string
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
@@ -129,8 +165,8 @@ export default function LessonDetailPage() {
           </div>
         </div>
 
-        {/* Video Section */}
-        {lesson.video_url && (
+        {/* YouTube Video Section */}
+        {lesson.youtube_link && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -138,13 +174,17 @@ export default function LessonDetailPage() {
             className="mb-8"
           >
             <GlassCard>
-              <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center mb-4">
+              <h2 className="text-lg font-semibold mb-4">Lesson Video</h2>
+              <div className="aspect-video bg-black rounded-lg overflow-hidden">
                 <iframe
                   width="100%"
                   height="100%"
-                  src={lesson.video_url}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  src={getYouTubeEmbedUrl(lesson.youtube_link)}
+                  title={lesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
+                  loading="lazy"
                   className="w-full h-full"
                 />
               </div>

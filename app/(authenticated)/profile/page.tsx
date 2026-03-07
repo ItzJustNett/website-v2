@@ -53,7 +53,7 @@ export default function ProfilePage() {
     if (isLoading) {
       fetchProfile()
     }
-  }, [showError])
+  }, [showError, isLoading])
 
   const achievements = [
     { name: "First Steps", icon: "👣", unlocked: profile && profile.lessons_completed > 0 },
