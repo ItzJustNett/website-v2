@@ -62,7 +62,7 @@ function getYouTubeVideoId(url: string): string {
 function YouTubePlayer({ url, title }: { url: string; title: string }) {
   const [activated, setActivated] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<YT.Player | null>(null)
+  const playerRef = useRef<unknown>(null)
   const videoId = getYouTubeVideoId(url)
 
   const initPlayer = useCallback(() => {
@@ -87,7 +87,7 @@ function YouTubePlayer({ url, title }: { url: string; title: string }) {
       return
     }
 
-    window.onYouTubeIframeAPIReady = () => createPlayer()
+    ;(window as unknown as Record<string, unknown>).onYouTubeIframeAPIReady = () => createPlayer()
 
     if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
       const script = document.createElement("script")
