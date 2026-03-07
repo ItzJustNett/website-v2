@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
@@ -35,107 +35,25 @@ interface Exercise {
   correct_option: number
 }
 
-// Helper function to extract YouTube video ID from various URL formats
-function getYouTubeVideoId(url: string): string {
+// Helper function to convert YouTube URL to embed URL
+function getYouTubeEmbedUrl(url: string): string {
   if (!url) return ""
 
-  // youtu.be format
+  let videoId = ""
+
   if (url.includes("youtu.be/")) {
-    return url.split("youtu.be/")[1].split("?")[0]
-  }
-  // youtube.com watch format
-  if (url.includes("youtube.com/watch")) {
+    videoId = url.split("youtu.be/")[1].split("?")[0]
+  } else if (url.includes("youtube.com/watch")) {
     try {
-      return new URL(url).searchParams.get("v") || ""
+      videoId = new URL(url).searchParams.get("v") || ""
     } catch {
-      return ""
+      return url
     }
-  }
-  // embed format
-  if (url.includes("youtube.com/embed/") || url.includes("youtube-nocookie.com/embed/")) {
-    return url.split("/embed/")[1].split("?")[0]
+  } else if (url.includes("youtube.com/embed/")) {
+    return url
   }
 
-  return ""
-}
-
-function YouTubePlayer({ url, title }: { url: string; title: string }) {
-  const [activated, setActivated] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const playerRef = useRef<any>(null)
-  const videoId = getYouTubeVideoId(url)
-
-  const initPlayer = useCallback(() => {
-    if (!containerRef.current || !videoId || playerRef.current) return
-
-    const createPlayer = () => {
-      playerRef.current = new window.YT.Player(containerRef.current!, {
-        videoId,
-        host: "https://www.youtube-nocookie.com",
-        playerVars: {
-          autoplay: 1,
-          modestbranding: 1,
-          rel: 0,
-          origin: window.location.origin,
-        },
-      })
-    }
-
-    // Load YT API if not already loaded
-    if (typeof window.YT !== "undefined" && window.YT.Player) {
-      createPlayer()
-      return
-    }
-
-    ;(window as unknown as Record<string, unknown>).onYouTubeIframeAPIReady = () => createPlayer()
-
-    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-      const script = document.createElement("script")
-      script.src = "https://www.youtube.com/iframe_api"
-      document.head.appendChild(script)
-    }
-  }, [videoId])
-
-  useEffect(() => {
-    if (activated) initPlayer()
-  }, [activated, initPlayer])
-
-  useEffect(() => {
-    return () => {
-      playerRef.current?.destroy()
-      playerRef.current = null
-    }
-  }, [])
-
-  if (!videoId) return null
-
-  if (activated) {
-    return <div ref={containerRef} className="w-full h-full" />
-  }
-
-  return (
-    <button
-      onClick={() => setActivated(true)}
-      className="relative w-full h-full group cursor-pointer"
-      aria-label={`Play ${title}`}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-        alt={title}
-        className="w-full h-full object-cover"
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-        }}
-      />
-      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-        <div className="w-16 h-16 rounded-full bg-red-600 group-hover:bg-red-500 transition-colors flex items-center justify-center shadow-lg">
-          <Play className="w-7 h-7 text-white fill-white ml-1" />
-        </div>
-      </div>
-    </button>
-  )
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : url
 }
 
 export default function LessonDetailPage() {
@@ -251,7 +169,15 @@ export default function LessonDetailPage() {
             <GlassCard>
               <h2 className="text-lg font-semibold mb-4">Lesson Video</h2>
               <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                <YouTubePlayer url={lesson.youtube_link} title={lesson.title} />
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={getYouTubeEmbedUrl(lesson.youtube_link)}
+                  title={lesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
               </div>
             </GlassCard>
           </motion.div>
