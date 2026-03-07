@@ -62,7 +62,8 @@ function getYouTubeVideoId(url: string): string {
 function YouTubePlayer({ url, title }: { url: string; title: string }) {
   const [activated, setActivated] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<unknown>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const playerRef = useRef<any>(null)
   const videoId = getYouTubeVideoId(url)
 
   const initPlayer = useCallback(() => {
