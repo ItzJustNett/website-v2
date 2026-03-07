@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import {
   Menu,
@@ -10,7 +9,6 @@ import {
   LogOut,
   Settings,
   ChevronDown,
-  Coins,
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import {
@@ -22,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { fetchWithAuth } from "@/lib/api"
 
 interface HeaderProps {
   sidebarOpen: boolean
@@ -31,15 +30,23 @@ interface HeaderProps {
 export function Header({ onSidebarToggle }: HeaderProps) {
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
-  const [coins, setCoins] = useState(1250)
+  const [coins, setCoins] = useState(0)
+
+  useEffect(() => {
+    const fetchCoins = async () => {
+      try {
+        const profile = await fetchWithAuth("/profiles/me")
+        setCoins(profile.meowcoins || 0)
+      } catch (err) {
+        console.error("Error fetching coins:", err)
+      }
+    }
+
+    fetchCoins()
+  }, [])
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="sticky top-0 z-40 border-b border-border/40 bg-background/40 backdrop-blur-md"
-    >
+    <header className="sticky top-0 z-40 border-b border-black dark:border-white bg-white dark:bg-black">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
         {/* Left side */}
         <div className="flex items-center gap-4">
@@ -51,33 +58,21 @@ export function Header({ onSidebarToggle }: HeaderProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
-
-          <div className="hidden md:flex items-center gap-2">
-            <h2 className="font-semibold text-lg">Welcome back!</h2>
-          </div>
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-4">
           {/* Coins counter */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg glass hover:bg-primary/10 transition-colors"
-            onClick={() => setCoins((c) => c + 100)}
-          >
-            <Coins className="w-5 h-5 text-yellow-500" />
-            <span className="font-semibold hidden sm:inline text-sm md:text-base">
-              {coins}
-            </span>
-          </motion.button>
+          <div className="flex items-center gap-2 text-sm font-sans hidden sm:flex">
+            <span className="font-medium">{coins} coins</span>
+          </div>
 
           {/* Theme toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-lg"
+            className="rounded-sm"
           >
             {theme === "dark" ? (
               <Sun className="w-5 h-5" />
@@ -91,17 +86,17 @@ export function Header({ onSidebarToggle }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 rounded-lg px-2 md:px-3"
+                className="flex items-center gap-2 rounded-sm px-2 md:px-3 text-sm"
               >
-                <div className="hidden sm:flex items-center">
-                  <span className="text-sm font-medium">{user?.username}</span>
+                <div className="hidden sm:flex items-center font-sans">
+                  <span>{user?.username}</span>
                 </div>
                 <ChevronDown className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="bg-white dark:bg-black border border-black dark:border-white rounded-sm">
+              <DropdownMenuLabel className="font-serif">
                 {user?.username}
               </DropdownMenuLabel>
 
@@ -118,7 +113,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
 
               <DropdownMenuItem
                 onClick={logout}
-                className="text-red-600 cursor-pointer"
+                className="cursor-pointer font-sans"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
@@ -127,6 +122,6 @@ export function Header({ onSidebarToggle }: HeaderProps) {
           </DropdownMenu>
         </div>
       </div>
-    </motion.header>
+    </header>
   )
 }

@@ -1,294 +1,247 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/auth-context"
+import { useNotification } from "@/contexts/notification-context"
 import { PageTransition } from "@/components/page-transition"
-import { GlassCard } from "@/components/immersive/glass-card"
-import { StreakFlame } from "@/components/immersive/streak-flame"
-import { CoinCounter } from "@/components/immersive/coin-counter"
-import { XPProgressBar } from "@/components/immersive/xp-progress-bar"
-import { CatMascot } from "@/components/immersive/cat-mascot"
-import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
+import { EditorialCard } from "@/components/immersive/editorial-card"
+import { EditorialButton } from "@/components/immersive/editorial-button"
+import { EditorialProgress } from "@/components/immersive/editorial-progress"
+import { EditorialStat } from "@/components/immersive/editorial-stat"
+import { fetchWithAuth } from "@/lib/api"
 import Link from "next/link"
 import {
   BookOpen,
   Zap,
   ShoppingBag,
   Brain,
-  Trophy,
+  ArrowRight,
 } from "lucide-react"
+
+interface DashboardData {
+  streak: number
+  lessons_completed: number
+  tests_completed: number
+}
+
+interface ProfileData {
+  xp: number
+  max_xp: number
+  level: number
+  meowcoins: number
+}
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const { error: showError } = useNotification()
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Mock data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+
+        const dashDataRaw = await fetchWithAuth("/debug/overview")
+        const dashData = dashDataRaw && typeof dashDataRaw === "object"
+          ? dashDataRaw
+          : {
+              streak: 0,
+              lessons_completed: 0,
+              tests_completed: 0,
+            }
+        setDashboardData(dashData)
+
+        const profDataRaw = await fetchWithAuth("/profiles/me")
+        const profData = profDataRaw && typeof profDataRaw === "object"
+          ? profDataRaw
+          : {
+              level: 1,
+              xp: 0,
+              max_xp: 5000,
+              meowcoins: 0,
+            }
+        setProfileData(profData)
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err)
+        showError("Failed to load dashboard data")
+        setDashboardData({
+          streak: 0,
+          lessons_completed: 0,
+          tests_completed: 0,
+        })
+        setProfileData({
+          level: 1,
+          xp: 0,
+          max_xp: 5000,
+          meowcoins: 0,
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [showError])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        >
+          <div className="w-12 h-12 rounded-full border-2 border-black dark:border-white border-t-transparent"></div>
+        </motion.div>
+      </div>
+    )
+  }
+
   const stats = {
-    streak: 15,
-    lessonsCompleted: 42,
-    testsCompleted: 28,
-    level: 8,
-    currentXP: 2450,
-    maxXP: 5000,
-    coins: 1250,
-  }
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
+    streak: dashboardData?.streak || 0,
+    lessonsCompleted: dashboardData?.lessons_completed || 0,
+    testsCompleted: dashboardData?.tests_completed || 0,
+    level: profileData?.level || 1,
+    currentXP: profileData?.xp || 0,
+    maxXP: profileData?.max_xp || 5000,
+    coins: profileData?.meowcoins || 0,
   }
 
   const quickActions = [
     {
       title: "Start Lesson",
-      icon: BookOpen,
       href: "/lessons",
-      color: "from-blue-500 to-cyan-500",
+      icon: BookOpen,
     },
     {
       title: "Take Test",
-      icon: Zap,
       href: "/tests",
-      color: "from-purple-500 to-pink-500",
+      icon: Zap,
     },
     {
       title: "Visit Store",
-      icon: ShoppingBag,
       href: "/store",
-      color: "from-yellow-500 to-orange-500",
+      icon: ShoppingBag,
     },
     {
       title: "AI Features",
-      icon: Brain,
       href: "/ai-features",
-      color: "from-green-500 to-teal-500",
+      icon: Brain,
     },
   ]
 
   return (
     <PageTransition>
       <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-16"
       >
         {/* Welcome Header */}
-        <motion.div variants={itemVariants}>
-          <div className="flex items-end justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">
-                Welcome back, {user?.username}! 🎉
-              </h1>
-              <p className="text-muted-foreground">
-                Keep up your streak and level up your knowledge
-              </p>
-            </div>
-            <CoinCounter count={stats.coins} size="lg" />
-          </div>
-        </motion.div>
-
-        {/* Stats Grid */}
-        <motion.div
-          variants={containerVariants}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {/* Streak Card */}
-          <motion.div variants={itemVariants}>
-            <GlassCard className="text-center">
-              <div className="flex justify-center mb-4">
-                <StreakFlame size="lg" color="orange" />
-              </div>
-              <h3 className="text-sm text-muted-foreground mb-2">
-                Current Streak
-              </h3>
-              <p className="text-4xl font-bold">{stats.streak}</p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Days in a row
-              </p>
-            </GlassCard>
-          </motion.div>
-
-          {/* Lessons Card */}
-          <motion.div variants={itemVariants}>
-            <GlassCard>
-              <div className="flex items-center justify-between mb-4">
-                <BookOpen className="w-6 h-6 text-blue-500" />
-                <span className="text-2xl font-bold">{stats.lessonsCompleted}</span>
-              </div>
-              <h3 className="text-sm text-muted-foreground">
-                Lessons Completed
-              </h3>
-              <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "75%" }}
-                  transition={{ duration: 1, delay: 0.3 }}
-                  className="h-full bg-blue-500"
-                />
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          {/* Tests Card */}
-          <motion.div variants={itemVariants}>
-            <GlassCard>
-              <div className="flex items-center justify-between mb-4">
-                <Zap className="w-6 h-6 text-purple-500" />
-                <span className="text-2xl font-bold">{stats.testsCompleted}</span>
-              </div>
-              <h3 className="text-sm text-muted-foreground">Tests Completed</h3>
-              <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "56%" }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                  className="h-full bg-purple-500"
-                />
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          {/* Level Card */}
-          <motion.div variants={itemVariants}>
-            <GlassCard>
-              <div className="flex items-center justify-between mb-4">
-                <Trophy className="w-6 h-6 text-yellow-500" />
-                <span className="text-2xl font-bold">Level {stats.level}</span>
-              </div>
-              <h3 className="text-sm text-muted-foreground">Your Level</h3>
-              <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "49%" }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                  className="h-full bg-yellow-500"
-                />
-              </div>
-            </GlassCard>
-          </motion.div>
-        </motion.div>
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Streak Showcase + Cat */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <GlassCard>
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Streak Power! 🔥</h2>
-                  <p className="text-muted-foreground">
-                    You&apos;re on fire! Keep learning to maintain your streak.
-                  </p>
-                </div>
-                <div className="text-6xl">
-                  <StreakFlame size="xl" />
-                </div>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-6 mb-6">
-                <p className="text-lg font-semibold mb-2">
-                  Next milestone: 30 day streak 🎯
-                </p>
-                <div className="h-3 rounded-full bg-muted overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "50%" }}
-                    transition={{ duration: 1, delay: 0.6 }}
-                    className="h-full bg-gradient-to-r from-orange-500 to-red-500"
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  15 of 30 days complete
-                </p>
-              </div>
-
-              <div className="text-center">
-                <p className="text-muted-foreground mb-4">
-                  Maintain your streak by completing at least 1 lesson per day
-                </p>
-                <Link href="/lessons">
-                  <ButtonEnhanced className="w-full">
-                    Start a Lesson
-                  </ButtonEnhanced>
-                </Link>
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          {/* Cat Mascot */}
-          <motion.div variants={itemVariants}>
-            <GlassCard className="flex flex-col items-center justify-center text-center h-full">
-              <CatMascot size="lg" state="happy" />
-              <h3 className="text-lg font-semibold mt-4">Whiskers</h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                Your learning companion
-              </p>
-            </GlassCard>
-          </motion.div>
+        <div>
+          <h1 className="text-5xl font-serif font-bold mb-4">
+            Welcome, {user?.username}
+          </h1>
+          <p className="text-lg text-muted-foreground font-sans">
+            {stats.streak > 0
+              ? `You're on a ${stats.streak}-day streak. Keep it going.`
+              : "Start your learning journey today."}
+          </p>
         </div>
 
-        {/* XP Progress */}
-        <motion.div variants={itemVariants}>
-          <GlassCard>
-            <h2 className="text-lg font-bold mb-6">Experience Progress</h2>
-            <XPProgressBar
-              current={stats.currentXP}
-              max={stats.maxXP}
-              level={stats.level}
-              showLabel
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <EditorialStat value={stats.streak} label="Day Streak" size="lg" />
+          <EditorialStat value={stats.lessonsCompleted} label="Lessons Done" size="lg" />
+          <EditorialStat value={stats.testsCompleted} label="Tests Passed" size="lg" />
+          <EditorialStat value={`Lvl ${stats.level}`} label="Current Level" size="lg" />
+        </div>
+
+        {/* Divider */}
+        <div className="editorial-divider" />
+
+        {/* Progress Section */}
+        <div>
+          <h2 className="text-3xl font-serif font-bold mb-8">Progress</h2>
+          <div className="space-y-6">
+            <EditorialProgress
+              value={stats.lessonsCompleted}
+              max={100}
+              label="Lessons Completed"
+              showPercentage={false}
             />
-          </GlassCard>
-        </motion.div>
+            <EditorialProgress
+              value={stats.testsCompleted}
+              max={50}
+              label="Tests Completed"
+              showPercentage={false}
+            />
+            <EditorialProgress
+              value={stats.currentXP}
+              max={stats.maxXP}
+              label={`Level ${stats.level} Progress`}
+              showPercentage={true}
+            />
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="editorial-divider" />
+
+        {/* Quick Stats */}
+        <EditorialCard>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+            <div>
+              <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
+                Available Coins
+              </p>
+              <p className="text-4xl font-serif font-bold">{stats.coins}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
+                Current Level
+              </p>
+              <p className="text-4xl font-serif font-bold">{stats.level}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
+                Total XP
+              </p>
+              <p className="text-4xl font-serif font-bold">{stats.currentXP}</p>
+            </div>
+          </div>
+        </EditorialCard>
+
+        {/* Divider */}
+        <div className="editorial-divider" />
 
         {/* Quick Actions */}
-        <motion.div variants={itemVariants}>
-          <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => {
+        <div>
+          <h2 className="text-3xl font-serif font-bold mb-8">Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {quickActions.map((action) => {
               const Icon = action.icon
               return (
-                <motion.div
-                  key={action.href}
-                  variants={itemVariants}
-                  custom={index}
-                >
-                  <Link href={action.href}>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <GlassCard className="h-full flex flex-col items-center justify-center text-center py-6">
-                        <div
-                          className={`bg-gradient-to-br ${action.color} p-3 rounded-lg mb-3`}
-                        >
-                          <Icon className="w-6 h-6 text-white" />
+                <Link key={action.href} href={action.href}>
+                  <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                    <EditorialCard>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Icon className="w-6 h-6" />
+                          <span className="font-sans font-medium">{action.title}</span>
                         </div>
-                        <p className="font-semibold text-sm">
-                          {action.title}
-                        </p>
-                      </GlassCard>
-                    </motion.div>
-                  </Link>
-                </motion.div>
+                        <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </EditorialCard>
+                  </motion.div>
+                </Link>
               )
             })}
           </div>
-        </motion.div>
+        </div>
       </motion.div>
     </PageTransition>
   )

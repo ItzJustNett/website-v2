@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -11,7 +10,6 @@ import {
   Brain,
   Home,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -26,61 +24,46 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <motion.aside
-      initial={{ x: -256 }}
-      animate={{ x: 0 }}
-      transition={{ duration: 0.3 }}
-      className="hidden md:block w-64 border-r border-border/40 bg-background/40 backdrop-blur-md h-screen sticky top-0"
-    >
-      <nav className="flex flex-col h-full p-4 gap-2">
+    <aside className="hidden md:flex flex-col w-64 border-r border-black dark:border-white bg-white dark:bg-black h-screen sticky top-0">
+      <nav className="flex flex-col h-full p-6">
         {/* Logo/Brand */}
-        <div className="px-4 py-6">
-          <h1 className="text-2xl font-bold text-primary">PureMind</h1>
+        <div className="mb-12">
+          <h1 className="text-3xl font-serif font-bold text-black dark:text-white">
+            PureMind
+          </h1>
         </div>
 
         {/* Navigation Items */}
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 space-y-4">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname.startsWith(item.href)
 
             return (
-              <motion.div
+              <Link
                 key={item.href}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                href={item.href}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-sans transition-all duration-200 hover:bg-muted dark:hover:bg-muted relative group"
               >
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                    isActive
-                      ? "bg-primary/20 text-primary font-semibold shadow-lg"
-                      : "text-foreground/70 hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r"
-                      transition={{ duration: 0.2 }}
-                    />
-                  )}
-                </Link>
-              </motion.div>
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span className={isActive ? "font-semibold" : "font-normal"}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-black dark:bg-white" />
+                )}
+              </Link>
             )
           })}
         </div>
 
         {/* Bottom info */}
-        <div className="pt-4 border-t border-border/40">
-          <p className="text-xs text-muted-foreground px-4">
-            v1.0 - Immersive Edition
+        <div className="pt-6 border-t border-black dark:border-white">
+          <p className="text-xs text-muted-foreground px-4 font-sans">
+            Editorial Edition
           </p>
         </div>
       </nav>
-    </motion.aside>
+    </aside>
   )
 }

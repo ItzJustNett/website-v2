@@ -20,9 +20,9 @@ export function GlassCard({
 }: GlassCardProps) {
   return (
     <motion.div
-      whileHover={hover ? { y: -8, scale: 1.02 } : {}}
-      whileTap={hover ? { scale: 0.98 } : {}}
-      transition={{ duration: 0.2 }}
+      whileHover={hover ? { y: -4, scale: 1.01 } : {}}
+      whileTap={hover ? { scale: 0.99 } : {}}
+      transition={{ duration: 0.15 }}
       onClick={onClick}
       className={cn(
         "rounded-2xl p-6 backdrop-blur-md border transition-all duration-300",

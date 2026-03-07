@@ -12,12 +12,12 @@ interface CoinCounterProps {
 }
 
 export function CoinCounter({
-  count,
+  count = 0,
   showLabel = true,
   size = "md",
   variant = "default",
 }: CoinCounterProps) {
-  const [displayCount, setDisplayCount] = useState(count)
+  const [displayCount, setDisplayCount] = useState(count ?? 0)
   const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function CoinCounter({
       {variant === "default" && (
         <div>
           <motion.span className={`font-bold text-foreground`}>
-            {displayCount.toLocaleString()}
+            {(displayCount ?? 0).toLocaleString()}
           </motion.span>
           {showLabel && (
             <span className="text-xs text-muted-foreground ml-1">coins</span>
@@ -71,7 +71,7 @@ export function CoinCounter({
 
       {variant === "compact" && (
         <motion.span className="font-bold text-sm">
-          {displayCount.toLocaleString()}
+          {(displayCount ?? 0).toLocaleString()}
         </motion.span>
       )}
     </motion.div>

@@ -18,8 +18,9 @@ export function ButtonEnhanced({
 }: EnhancedButtonProps) {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.1 }}
       className={glow ? "relative" : ""}
     >
       {glow && (

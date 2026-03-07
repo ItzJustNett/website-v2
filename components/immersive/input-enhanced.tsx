@@ -16,10 +16,10 @@ const InputEnhanced = React.forwardRef<HTMLInputElement, InputEnhancedProps>(
       <motion.div
         animate={
           isFocused && glow
-            ? { boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)" }
+            ? { boxShadow: "0 0 12px rgba(59, 130, 246, 0.4)" }
             : { boxShadow: "0 0 0px rgba(59, 130, 246, 0)" }
         }
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.15 }}
         className="relative rounded-md"
       >
         <input

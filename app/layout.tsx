@@ -1,10 +1,23 @@
 import type { Metadata } from "next"
+import { Cormorant_Garamond, Inter } from 'next/font/google'
 import "./globals.css"
 import { Providers } from "@/components/providers"
 
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['300', '400', '600', '700'],
+  variable: '--font-serif'
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans'
+})
+
 export const metadata: Metadata = {
-  title: "PureMind - Immersive Learning Platform",
-  description: "Learn with immersive gamification and adaptive AI-powered features",
+  title: "PureMind - Editorial Learning Platform",
+  description: "Minimalist learning platform with curated content and focused design",
   icons: {
     icon: "/favicon.ico",
   },
@@ -16,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${cormorant.variable} ${inter.variable}`}>
       <body className="bg-background text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>
