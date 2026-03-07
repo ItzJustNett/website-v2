@@ -9,15 +9,12 @@ import { CoinCounter } from "@/components/immersive/coin-counter"
 import { XPProgressBar } from "@/components/immersive/xp-progress-bar"
 import { CatMascot } from "@/components/immersive/cat-mascot"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
   BookOpen,
   Zap,
   ShoppingBag,
   Brain,
-  Target,
-  Flame,
   Trophy,
 } from "lucide-react"
 
@@ -195,7 +192,7 @@ export default function DashboardPage() {
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Streak Power! 🔥</h2>
                   <p className="text-muted-foreground">
-                    You're on fire! Keep learning to maintain your streak.
+                    You&apos;re on fire! Keep learning to maintain your streak.
                   </p>
                 </div>
                 <div className="text-6xl">

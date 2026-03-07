@@ -9,9 +9,8 @@ import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { InputEnhanced } from "@/components/immersive/input-enhanced"
-import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Brain, Mail, Lock } from "lucide-react"
+import { Brain } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
