@@ -55,7 +55,7 @@ export default function TestsPage() {
     try {
       setCreatingTest(lessonId)
       await fetchWithAuth(`/lessons/${lessonId}/test`, {
-        method: "POST",
+        method: "GET",
       })
       showSuccess("Test created! Starting test...")
       // In a real app, you'd navigate to the test taking interface
