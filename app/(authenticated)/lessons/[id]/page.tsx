@@ -132,10 +132,18 @@ export default function LessonDetailPage() {
       const testData = await fetchWithAuth(`/lessons/${lessonId}/test`, {
         method: "GET",
       })
-      setTest(testData)
-      setTestAnswers({})
-      setShowTestResults(false)
-      showSuccess("Test created! Scroll down to view the test.")
+
+      // Check if running in Electron
+      if (typeof window !== "undefined" && (window as any).electron) {
+        ;(window as any).electron.openTestWindow(testData)
+        showSuccess("Test opened in new window")
+      } else {
+        // Fallback to inline display for web version
+        setTest(testData)
+        setTestAnswers({})
+        setShowTestResults(false)
+        showSuccess("Test created! Scroll down to view the test.")
+      }
     } catch (err) {
       console.error("Error creating test:", err)
       showError("Failed to create test")
