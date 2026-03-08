@@ -8,7 +8,7 @@ import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { ErrorState } from "@/components/immersive/error-state"
 import { motion } from "framer-motion"
-import { ArrowLeft, BookOpen, Play, Send } from "lucide-react"
+import { ArrowLeft, BookOpen, Play, Send, Zap } from "lucide-react"
 import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
 import Link from "next/link"
@@ -226,119 +226,55 @@ export default function LessonDetailPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
+        className="h-screen flex flex-col"
       >
-        {/* Back button */}
-        <Link href="/lessons" className="flex items-center gap-2 text-primary hover:underline mb-6">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Lessons
-        </Link>
-
-        {/* Lesson Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-3 flex items-center gap-3">
-            <BookOpen className="w-8 h-8" />
-            {lesson.title}
-          </h1>
-
-          <div className="flex flex-wrap gap-3">
+        {/* Header with lesson name */}
+        <div className="sticky top-0 z-40 border-b border-secondary bg-background flex items-center justify-between h-16 px-6 gap-4">
+          <div className="flex items-center gap-4">
+            <Link href="/lessons" className="text-primary hover:opacity-70 transition">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-lg font-bold truncate flex-1">{lesson.title}</h1>
+          </div>
+          <div className="flex items-center gap-2">
             {lesson.difficulty && (
-              <span className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary font-medium">
+              <span className="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary font-medium">
                 {lesson.difficulty}
               </span>
             )}
-            {lesson.xp_reward && (
-              <span className="text-xs px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-500 font-semibold">
-                +{lesson.xp_reward} XP
-              </span>
-            )}
             {lesson.completed && (
-              <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-500 font-medium">
+              <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-500">
                 ✓ Completed
               </span>
             )}
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
-          {/* Left Column - Video and Content */}
-          <div className="lg:col-span-2 flex flex-col gap-6 overflow-y-auto">
-            {/* YouTube Video Section */}
+        {/* Two Column Layout - Main content area */}
+        <div className="flex-1 flex overflow-hidden gap-4 px-6 pb-6">
+          {/* Left Column - Video (fills space) */}
+          <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
+            {/* YouTube Video Section - Fill available space */}
             {lesson.youtube_link && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex-1"
               >
-                <GlassCard className="h-96">
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden h-full">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={getYouTubeEmbedUrl(lesson.youtube_link)}
-                      title={lesson.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    />
-                  </div>
-                </GlassCard>
+                <div className="w-full h-full bg-black rounded-lg overflow-hidden">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={getYouTubeEmbedUrl(lesson.youtube_link)}
+                    title={lesson.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
               </motion.div>
             )}
-
-            {/* Description */}
-            {lesson.description && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <GlassCard>
-                  <h2 className="text-lg font-semibold mb-3">Overview</h2>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{lesson.description}</p>
-                </GlassCard>
-              </motion.div>
-            )}
-
-            {/* Content */}
-            {lesson.content && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <GlassCard>
-                  <h2 className="text-lg font-semibold mb-3">Content</h2>
-                  <div className="prose prose-invert prose-sm max-w-none">
-                    {lesson.content}
-                  </div>
-                </GlassCard>
-              </motion.div>
-            )}
-
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex gap-3 flex-wrap"
-            >
-              <ButtonEnhanced glow className="flex items-center gap-2 text-sm">
-                <Play className="w-4 h-4" />
-                {lesson.completed ? "Review" : "Start"}
-              </ButtonEnhanced>
-              <ButtonEnhanced
-                variant="outline"
-                className="text-sm"
-                onClick={handleCreateTest}
-                disabled={isCreatingTest}
-              >
-                {isCreatingTest ? "Creating..." : "Test"}
-              </ButtonEnhanced>
-              <ButtonEnhanced variant="outline" className="text-sm">
-                Summary
-              </ButtonEnhanced>
-            </motion.div>
 
             {/* Test Section */}
             {test && (
@@ -441,65 +377,41 @@ export default function LessonDetailPage() {
             )}
           </div>
 
-          {/* Right Column - AI Chat */}
+          {/* Right Column - Tools Sidebar (thin) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-1"
+            transition={{ duration: 0.5 }}
+            className="w-20 flex flex-col gap-2"
           >
-            <GlassCard className="h-full flex flex-col">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🤖</span> AI Assistant
-              </h2>
+            <ButtonEnhanced
+              glow
+              className="flex flex-col items-center justify-center w-full h-16 text-xs"
+              title="Start lesson"
+            >
+              <Play className="w-5 h-5 mb-1" />
+              <span>Start</span>
+            </ButtonEnhanced>
 
-              {/* Messages Container */}
-              <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                        msg.sender === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-                {isSending && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted text-muted-foreground px-3 py-2 rounded-lg text-sm">
-                      <span className="animate-pulse">Thinking...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <ButtonEnhanced
+              variant="outline"
+              className="flex flex-col items-center justify-center w-full h-16 text-xs"
+              onClick={handleCreateTest}
+              disabled={isCreatingTest}
+              title="Take test"
+            >
+              <Zap className="w-5 h-5 mb-1" />
+              <span className="text-[10px]">{isCreatingTest ? "..." : "Test"}</span>
+            </ButtonEnhanced>
 
-              {/* Input Area */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  placeholder="Ask a question..."
-                  className="flex-1 px-3 py-2 rounded-lg bg-secondary text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                  disabled={isSending}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={isSending || !inputValue.trim()}
-                  className="px-3 py-2 rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-            </GlassCard>
+            <ButtonEnhanced
+              variant="outline"
+              className="flex flex-col items-center justify-center w-full h-16 text-xs"
+              title="Generate summary"
+            >
+              <BookOpen className="w-5 h-5 mb-1" />
+              <span>Summary</span>
+            </ButtonEnhanced>
           </motion.div>
         </div>
       </motion.div>
