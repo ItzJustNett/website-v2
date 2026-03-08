@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
@@ -65,6 +65,7 @@ function getYouTubeEmbedUrl(url: string): string {
 
 export default function LessonDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const lessonId = params?.id as string
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
@@ -80,7 +81,8 @@ export default function LessonDetailPage() {
   ])
   const [inputValue, setInputValue] = useState("")
   const [isSending, setIsSending] = useState(false)
-  const { error: showError } = useNotification()
+  const [isCreatingTest, setIsCreatingTest] = useState(false)
+  const { error: showError, success: showSuccess } = useNotification()
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
@@ -107,6 +109,21 @@ export default function LessonDetailPage() {
       setMessages((prev) => [...prev, aiMessage])
       setIsSending(false)
     }, 1000)
+  }
+
+  const handleCreateTest = async () => {
+    try {
+      setIsCreatingTest(true)
+      await fetchWithAuth(`/lessons/${lessonId}/test`, {
+        method: "GET",
+      })
+      showSuccess("Test created! Scroll down to view the test.")
+    } catch (err) {
+      console.error("Error creating test:", err)
+      showError("Failed to create test")
+    } finally {
+      setIsCreatingTest(false)
+    }
   }
 
   useEffect(() => {
@@ -270,8 +287,13 @@ export default function LessonDetailPage() {
                 <Play className="w-4 h-4" />
                 {lesson.completed ? "Review" : "Start"}
               </ButtonEnhanced>
-              <ButtonEnhanced variant="outline" className="text-sm">
-                Test
+              <ButtonEnhanced
+                variant="outline"
+                className="text-sm"
+                onClick={handleCreateTest}
+                disabled={isCreatingTest}
+              >
+                {isCreatingTest ? "Creating..." : "Test"}
               </ButtonEnhanced>
               <ButtonEnhanced variant="outline" className="text-sm">
                 Summary

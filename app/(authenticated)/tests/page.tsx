@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
@@ -18,6 +19,7 @@ interface Lesson {
 }
 
 export default function TestsPage() {
+  const router = useRouter()
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [creatingTest, setCreatingTest] = useState<string | null>(null)
@@ -57,10 +59,9 @@ export default function TestsPage() {
       await fetchWithAuth(`/lessons/${lessonId}/test`, {
         method: "GET",
       })
-      showSuccess("Test created! Starting test...")
-      // In a real app, you'd navigate to the test taking interface
-      // For now, just show success
-      setCreatingTest(null)
+      showSuccess("Test created! Opening lesson...")
+      // Navigate to the lesson detail page to view the test
+      router.push(`/lessons/${lessonId}`)
     } catch (err) {
       console.error("Error creating test:", err)
       showError("Failed to create test")
