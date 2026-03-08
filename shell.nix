@@ -19,7 +19,7 @@ pkgs.mkShell {
     fontconfig
     gtk3
     openssl
-    webkit2gtk-4.1
+    webkitgtk
   ];
 
   shellHook = ''
@@ -34,13 +34,13 @@ pkgs.mkShell {
       pkgs.mesa
       pkgs.gtk3
       pkgs.openssl
-      pkgs.webkit2gtk-4.1
+      pkgs.webkitgtk
     ]}:$LD_LIBRARY_PATH
 
     export PKG_CONFIG_PATH=${pkgs.lib.makeLibraryPath [
       pkgs.gtk3
       pkgs.openssl
-      pkgs.webkit2gtk-4.1
+      pkgs.webkitgtk
     ]}:$PKG_CONFIG_PATH
   '';
 }
