@@ -133,9 +133,20 @@ export default function LessonDetailPage() {
         method: "GET",
       })
 
-      // Check if running in Electron
-      if (typeof window !== "undefined" && (window as any).electron) {
-        ;(window as any).electron.openTestWindow(testData)
+      // Check if running in Tauri
+      if (typeof window !== "undefined" && (window as any).__TAURI__) {
+        const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow")
+        try {
+          new WebviewWindow("test", {
+            url: "/test?data=" + encodeURIComponent(JSON.stringify(testData)),
+            width: 1200,
+            height: 800,
+            minWidth: 600,
+            minHeight: 500,
+          })
+        } catch (e) {
+          console.error("Window already exists:", e)
+        }
         showSuccess("Test opened in new window")
       } else {
         // Fallback to inline display for web version

@@ -3,12 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "build": "next build && electron-builder",
+    "dev": "tauri dev",
+    "dev:next": "next dev",
+    "build": "tauri build",
     "build:next": "next build",
-    "start": "next start",
-    "electron": "electron .",
-    "electron-dev": "electron . --dev",
     "lint": "next lint"
   },
   "dependencies": {
@@ -66,32 +64,18 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tauri-apps/cli": "^2.2.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/youtube": "^0.1.2",
-    "concurrently": "^9.1.0",
-    "electron": "^33.2.0",
-    "electron-builder": "^25.1.8",
-    "electron-is-dev": "^3.0.1",
     "eslint": "^9",
     "eslint-config-next": "^16.1.6",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
-    "wait-on": "^8.0.1"
+    "typescript": "^5"
   },
-  "main": "public/electron.js",
-  "homepage": "./",
-  "build": {
-    "appId": "com.puremind.app",
-    "productName": "PureMind",
-    "files": [
-      "out/**/*",
-      "public/electron.js"
-    ],
-    "directories": {
-      "buildResources": "assets"
-    }
+  "dependencies": {
+    "@tauri-apps/api": "^2.2.0"
   }
 }
