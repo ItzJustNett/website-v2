@@ -9,8 +9,10 @@ import {
   LogOut,
   Settings,
   ChevronDown,
+  ArrowLeft,
 } from "lucide-react"
 import { useTheme } from "next-themes"
+import { usePathname, useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +32,10 @@ interface HeaderProps {
 export function Header({ onSidebarToggle }: HeaderProps) {
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
+  const pathname = usePathname()
+  const router = useRouter()
   const [coins, setCoins] = useState(0)
+  const [pageTitle, setPageTitle] = useState("")
 
   useEffect(() => {
     const fetchCoins = async () => {
@@ -45,6 +50,27 @@ export function Header({ onSidebarToggle }: HeaderProps) {
     fetchCoins()
   }, [])
 
+  useEffect(() => {
+    const fetchPageTitle = async () => {
+      // Check if we're on a lesson page
+      const lessonMatch = pathname?.match(/\/lessons\/([^\/]+)/)
+      if (lessonMatch) {
+        try {
+          const lessonId = lessonMatch[1]
+          const lesson = await fetchWithAuth(`/lessons/${lessonId}`)
+          setPageTitle(lesson.title || "")
+        } catch (err) {
+          console.error("Error fetching lesson title:", err)
+          setPageTitle("")
+        }
+      } else {
+        setPageTitle("")
+      }
+    }
+
+    fetchPageTitle()
+  }, [pathname])
+
   return (
     <header className="sticky top-0 z-40 border-b border-black dark:border-white bg-white dark:bg-black">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
@@ -58,6 +84,26 @@ export function Header({ onSidebarToggle }: HeaderProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
+
+          {/* Back Button (shown on lesson pages) */}
+          {pageTitle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push("/lessons")}
+              className="hidden sm:flex"
+              title="Back to lessons"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+
+          {/* Page Title */}
+          {pageTitle && (
+            <h1 className="text-lg font-semibold truncate max-w-md">
+              {pageTitle}
+            </h1>
+          )}
         </div>
 
         {/* Right side */}

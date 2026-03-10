@@ -8,10 +8,9 @@ import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { ErrorState } from "@/components/immersive/error-state"
 import { motion } from "framer-motion"
-import { ArrowLeft, BookOpen, Play, Send, Zap } from "lucide-react"
+import { BookOpen, Play, Send, Zap } from "lucide-react"
 import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
-import Link from "next/link"
 
 interface Message {
   id: string
@@ -52,6 +51,13 @@ interface Test {
   lesson_id: string
   title: string
   questions: TestQuestion[]
+}
+
+interface Summary {
+  lesson_id: string
+  title: string
+  summary: string
+  key_points: string[]
 }
 
 // Helper function to convert YouTube URL to embed URL
@@ -97,6 +103,8 @@ export default function LessonDetailPage() {
   const [test, setTest] = useState<Test | null>(null)
   const [testAnswers, setTestAnswers] = useState<Record<number, number>>({})
   const [showTestResults, setShowTestResults] = useState(false)
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
+  const [summary, setSummary] = useState<Summary | null>(null)
   const { error: showError, success: showSuccess } = useNotification()
 
   const handleSendMessage = async () => {
@@ -163,6 +171,23 @@ export default function LessonDetailPage() {
     }
   }
 
+  const handleGenerateSummary = async () => {
+    try {
+      setIsGeneratingSummary(true)
+      const summaryData = await fetchWithAuth(`/lessons/${lessonId}/conspect`, {
+        method: "GET",
+      })
+
+      setSummary(summaryData)
+      showSuccess("Summary generated! Scroll down to view it.")
+    } catch (err) {
+      console.error("Error generating summary:", err)
+      showError("Failed to generate summary")
+    } finally {
+      setIsGeneratingSummary(false)
+    }
+  }
+
   const handleSelectAnswer = (questionIndex: number, optionIndex: number) => {
     setTestAnswers((prev) => ({
       ...prev,
@@ -210,12 +235,6 @@ export default function LessonDetailPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="mb-6">
-          <Link href="/lessons" className="flex items-center gap-2 text-primary hover:underline mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Lessons
-          </Link>
-        </div>
         <SkeletonLoader type="card" count={1} />
       </PageTransition>
     )
@@ -224,12 +243,6 @@ export default function LessonDetailPage() {
   if (error || !lesson) {
     return (
       <PageTransition>
-        <div className="mb-6">
-          <Link href="/lessons" className="flex items-center gap-2 text-primary hover:underline mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Lessons
-          </Link>
-        </div>
         <ErrorState
           icon="⚠️"
           title="Lesson not found"
@@ -245,55 +258,50 @@ export default function LessonDetailPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="h-screen flex flex-col"
+        className="h-screen flex"
       >
-        {/* Header with lesson name */}
-        <div className="sticky top-0 z-40 border-b border-secondary bg-background flex items-center justify-between h-16 px-6 gap-4">
-          <div className="flex items-center gap-4">
-            <Link href="/lessons" className="text-primary hover:opacity-70 transition">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <h1 className="text-lg font-bold truncate flex-1">{lesson.title}</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            {lesson.difficulty && (
-              <span className="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary font-medium">
-                {lesson.difficulty}
-              </span>
-            )}
-            {lesson.completed && (
-              <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-500">
-                ✓ Completed
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Two Column Layout - Main content area */}
-        <div className="flex-1 flex overflow-hidden gap-4 px-6 pb-6">
-          {/* Left Column - Video (fills space) */}
-          <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
-            {/* YouTube Video Section - Fill available space */}
-            {lesson.youtube_link && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="flex-1"
-              >
-                <div className="w-full h-full bg-black rounded-lg overflow-hidden">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={getYouTubeEmbedUrl(lesson.youtube_link)}
-                    title={lesson.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
+        {/* Main content area - Video takes most space */}
+        <div className="flex-1 flex flex-col">
+          {/* YouTube Video Section - Full width, bigger */}
+          {lesson.youtube_link && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="w-full bg-black relative"
+            >
+              {/* Status badges overlay on video */}
+              {(lesson.difficulty || lesson.completed) && (
+                <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+                  {lesson.difficulty && (
+                    <span className="text-xs px-3 py-1.5 rounded-full bg-black/80 backdrop-blur text-white font-medium">
+                      {lesson.difficulty}
+                    </span>
+                  )}
+                  {lesson.completed && (
+                    <span className="text-xs px-3 py-1.5 rounded-full bg-green-500/90 backdrop-blur text-white">
+                      ✓ Completed
+                    </span>
+                  )}
                 </div>
-              </motion.div>
-            )}
+              )}
+
+              <div className="w-full" style={{ height: 'calc(100vh - 64px)' }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={getYouTubeEmbedUrl(lesson.youtube_link)}
+                  title={lesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Scrollable content below video */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
 
             {/* Test Section */}
             {test && (
@@ -394,45 +402,98 @@ export default function LessonDetailPage() {
                 </GlassCard>
               </motion.div>
             )}
-          </div>
 
-          {/* Right Column - Tools Sidebar (thin) */}
+            {/* Summary Section */}
+            {summary && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <GlassCard>
+                  <h2 className="text-2xl font-bold mb-6">📝 Summary: {summary.title}</h2>
+
+                  <div className="space-y-6">
+                    {/* Main Summary Text */}
+                    <div className="prose prose-invert max-w-none">
+                      <p className="text-base leading-relaxed whitespace-pre-wrap">
+                        {summary.summary}
+                      </p>
+                    </div>
+
+                    {/* Key Points */}
+                    {summary.key_points && summary.key_points.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-4">🔑 Key Points:</h3>
+                        <ul className="space-y-2">
+                          {summary.key_points.map((point, idx) => (
+                            <li
+                              key={idx}
+                              className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20"
+                            >
+                              <span className="text-primary font-bold mt-0.5">
+                                {idx + 1}.
+                              </span>
+                              <span className="flex-1">{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Close Button */}
+                    <ButtonEnhanced
+                      onClick={() => setSummary(null)}
+                      variant="outline"
+                      className="w-full mt-6"
+                    >
+                      Close Summary
+                    </ButtonEnhanced>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Sidebar - Action Buttons (compact) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-20 flex flex-col gap-2"
+            className="w-16 flex flex-col gap-2 p-2 border-l border-secondary bg-background/50"
           >
             <ButtonEnhanced
               glow
-              className="flex flex-col items-center justify-center w-full h-16 text-xs"
+              className="flex flex-col items-center justify-center w-full h-14 p-1"
               title="Start lesson"
             >
-              <Play className="w-5 h-5 mb-1" />
-              <span>Start</span>
+              <Play className="w-4 h-4 mb-0.5" />
+              <span className="text-[9px]">Start</span>
             </ButtonEnhanced>
 
             <ButtonEnhanced
               variant="outline"
-              className="flex flex-col items-center justify-center w-full h-16 text-xs"
+              className="flex flex-col items-center justify-center w-full h-14 p-1"
               onClick={handleCreateTest}
               disabled={isCreatingTest}
               title="Take test"
             >
-              <Zap className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">{isCreatingTest ? "..." : "Test"}</span>
+              <Zap className="w-4 h-4 mb-0.5" />
+              <span className="text-[9px]">{isCreatingTest ? "..." : "Test"}</span>
             </ButtonEnhanced>
 
             <ButtonEnhanced
+              onClick={handleGenerateSummary}
+              disabled={isGeneratingSummary}
               variant="outline"
-              className="flex flex-col items-center justify-center w-full h-16 text-xs"
+              className="flex flex-col items-center justify-center w-full h-14 p-1"
               title="Generate summary"
             >
-              <BookOpen className="w-5 h-5 mb-1" />
-              <span>Summary</span>
+              <BookOpen className="w-4 h-4 mb-0.5" />
+              <span className="text-[9px]">{isGeneratingSummary ? "..." : "Summary"}</span>
             </ButtonEnhanced>
           </motion.div>
-        </div>
       </motion.div>
     </PageTransition>
   )
