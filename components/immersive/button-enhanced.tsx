@@ -47,7 +47,7 @@ export function ButtonEnhanced({
         />
 
         {/* Content */}
-        <span className="relative">{children}</span>
+        <span className="relative flex items-center justify-center">{children}</span>
       </Button>
     </motion.div>
   )

@@ -9,6 +9,7 @@ import { EditorialCard } from "@/components/immersive/editorial-card"
 import { EditorialButton } from "@/components/immersive/editorial-button"
 import { InputEnhanced } from "@/components/immersive/input-enhanced"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { OAuthButtons } from "@/components/oauth-buttons"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -151,6 +152,8 @@ export default function LoginPage() {
                   {isLoading ? "Logging in..." : "Login"}
                 </EditorialButton>
               </form>
+
+              <OAuthButtons />
             </TabsContent>
 
             {/* Register form */}
@@ -236,6 +239,8 @@ export default function LoginPage() {
                   {isLoading ? "Creating account..." : "Register"}
                 </EditorialButton>
               </form>
+
+              <OAuthButtons />
             </TabsContent>
           </Tabs>
         </EditorialCard>

@@ -1,206 +1,242 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
-import { CoinCounter } from "@/components/immersive/coin-counter"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
+import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
+import { EmptyState } from "@/components/immersive/empty-state"
 import { motion } from "framer-motion"
-import { ShoppingBag } from "lucide-react"
+import { Store, Coins, Package, Check } from "lucide-react"
 import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
 
 interface StoreItem {
   id: string
+  item_id: string
   name: string
   price: number
-  description?: string
-  type: string
+  description: string
+}
+
+interface Profile {
+  meowcoins: number
+  inventory: string[]
+  equipped_items: string[]
+}
+
+const ITEM_EMOJIS: Record<string, string> = {
+  "sunglasses": "😎",
+  "cap": "🧢",
+  "moustache": "🥸",
+  "butterfly": "🦋",
+  "bow-tie": "🎀",
+  "crown": "👑",
+  "glasses": "🤓",
+  "party-hat": "🎉",
+  "scarf": "🧣",
+  "bandana": "🏴‍☠️",
+  "flower": "🌸",
+  "bow": "🎀",
+  "top-hat": "🎩",
+  "headphones": "🎧",
+  "wizard-hat": "✨",
+  "pirate-hat": "🏴‍☠️",
+  "santa-hat": "🎅",
+  "chef-hat": "👨‍🍳",
+  "beret": "🎨",
+  "necklace": "💎",
+  "monocle": "🧐",
+  "tie": "👔",
+  "collar": "🔷",
+  "badge": "⭐",
+  "goggles": "🥽"
 }
 
 export default function StorePage() {
-  const [coins, setCoins] = useState(0)
   const [items, setItems] = useState<StoreItem[]>([])
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [purchasingId, setPurchasingId] = useState<string | null>(null)
-  const { error: showError, success: showSuccess } = useNotification()
+  const [buyingItemId, setBuyingItemId] = useState<string | null>(null)
+  const [equippingItemId, setEquippingItemId] = useState<string | null>(null)
+
+  const { success: showSuccess, error: showError } = useNotification()
 
   useEffect(() => {
-    const fetchStoreData = async () => {
-      try {
-        setIsLoading(true)
-        // Fetch user profile to get coins
-        const profile = await fetchWithAuth("/profiles/me")
-        setCoins(profile.meowcoins)
+    fetchData()
+  }, [])
 
-        // TODO: Fetch store items from API when endpoint is available
-        // For now, we'll use placeholder data
-        const defaultItems: StoreItem[] = [
-          {
-            id: "1",
-            name: "Golden Hat",
-            price: 500,
-            type: "hat",
-            description: "A shiny golden hat",
-          },
-          {
-            id: "2",
-            name: "Sunglasses",
-            price: 300,
-            type: "accessory",
-            description: "Cool shades",
-          },
-          {
-            id: "3",
-            name: "Party Crown",
-            price: 750,
-            type: "hat",
-            description: "Celebrate in style",
-          },
-          {
-            id: "4",
-            name: "Wizard Hat",
-            price: 1000,
-            type: "hat",
-            description: "Master of magic",
-          },
-        ]
-        setItems(defaultItems)
-      } catch (err) {
-        console.error("Error fetching store data:", err)
-        showError("Failed to load store")
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchData = async () => {
+    try {
+      setIsLoading(true)
+      const [storeData, profileData] = await Promise.all([
+        fetchWithAuth("/store"),
+        fetchWithAuth("/profiles/me")
+      ])
+
+      console.log("Store data:", storeData)
+      console.log("Profile data:", profileData)
+
+      // Ensure items is always an array
+      const storeItems = Array.isArray(storeData?.items) ? storeData.items :
+                         Array.isArray(storeData) ? storeData : []
+
+      setItems(storeItems)
+      setProfile(profileData)
+    } catch (err) {
+      console.error("Error fetching data:", err)
+      showError("Failed to load store")
+      setItems([]) // Ensure items is set to empty array on error
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    fetchStoreData()
-  }, [showError])
-
-  const handlePurchase = async (item: StoreItem) => {
-    if (coins < item.price) {
-      showError("Not enough coins!")
+  const handleBuy = async (itemId: string, price: number) => {
+    if (!profile || profile.meowcoins < price) {
+      showError("Not enough MeowCoins!")
       return
     }
 
     try {
-      setPurchasingId(item.id)
-      // TODO: Call actual purchase endpoint when available
-      // For now, just simulate the purchase
-      setCoins(coins - item.price)
-      showSuccess(`Purchased ${item.name}!`)
+      setBuyingItemId(itemId)
+      await fetchWithAuth("/store/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: itemId })
+      })
+
+      showSuccess("Item purchased!")
+      await fetchData()
     } catch (err) {
-      console.error("Purchase error:", err)
-      showError("Purchase failed")
+      showError("Failed to purchase item")
     } finally {
-      setPurchasingId(null)
+      setBuyingItemId(null)
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        >
-          <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent"></div>
-        </motion.div>
-      </div>
-    )
+  const handleEquip = async (itemId: string) => {
+    try {
+      setEquippingItemId(itemId)
+      await fetchWithAuth("/inventory/equip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: itemId })
+      })
+
+      showSuccess("Item equipped!")
+      await fetchData()
+    } catch (err) {
+      showError("Failed to equip item")
+    } finally {
+      setEquippingItemId(null)
+    }
   }
 
-  const storeEmojis: Record<string, string> = {
-    hat: "👒",
-    accessory: "😎",
-    background: "🎨",
+  const handleUnequip = async (itemId: string) => {
+    try {
+      setEquippingItemId(itemId)
+      await fetchWithAuth("/inventory/unequip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: itemId })
+      })
+
+      showSuccess("Item unequipped!")
+      await fetchData()
+    } catch (err) {
+      showError("Failed to unequip item")
+    } finally {
+      setEquippingItemId(null)
+    }
   }
+
+  const isOwned = (itemId: string) => profile?.inventory?.includes(itemId) || false
+  const isEquipped = (itemId: string) => profile?.equipped_items?.includes(itemId) || false
 
   return (
     <PageTransition>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <ShoppingBag className="w-8 h-8" />
-            Store
+            <Store className="w-8 h-8" />
+            Cat Accessories Store
           </h1>
-          <CoinCounter count={coins} size="lg" />
+
+          {profile && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/5 border border-border">
+              <Coins className="w-5 h-5 text-yellow-500" />
+              <span className="font-bold tabular-nums">{profile.meowcoins}</span>
+              <span className="text-sm text-muted-foreground">MeowCoins</span>
+            </div>
+          )}
         </div>
 
-        <div className="mb-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-          <p className="text-sm text-muted-foreground">
-            Use your meowcoins to customize your cat and unlock special items!
-          </p>
-        </div>
-
-        {items.length === 0 ? (
-          <GlassCard className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No items available yet.</p>
-            <p className="text-sm text-muted-foreground">Check back soon!</p>
-          </GlassCard>
+        {isLoading ? (
+          <SkeletonLoader type="card" count={4} />
+        ) : items.length === 0 ? (
+          <EmptyState icon="🏪" title="Store is empty" description="Check back later!" />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {items.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <GlassCard
-                  className="flex flex-col h-full"
-                  hover
-                  onClick={() => handlePurchase(item)}
+            {Array.isArray(items) && items.map((item, index) => {
+              const owned = isOwned(item.item_id)
+              const equipped = isEquipped(item.item_id)
+              const canAfford = profile && profile.meowcoins >= item.price
+
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <div className="text-6xl text-center mb-4">
-                    {storeEmojis[item.type] || "🎁"}
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-                  {item.description && (
-                    <p className="text-xs text-muted-foreground mb-4 flex-grow">
-                      {item.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between mb-4 pt-4 border-t border-border/50">
-                    <span className="text-yellow-500 font-bold flex items-center gap-1">
-                      💰 {item.price}
-                    </span>
-                    {coins >= item.price ? (
-                      <span className="text-xs text-green-500">✓ Affordable</span>
-                    ) : (
-                      <span className="text-xs text-red-500">Too pricey</span>
-                    )}
-                  </div>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <ButtonEnhanced
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handlePurchase(item)
-                      }}
-                      disabled={coins < item.price || purchasingId === item.id}
-                      className="w-full"
-                      glow={coins >= item.price}
-                    >
-                      {purchasingId === item.id
-                        ? "Purchasing..."
-                        : coins >= item.price
-                          ? "Buy"
-                          : "Can't Afford"}
-                    </ButtonEnhanced>
-                  </motion.div>
-                </GlassCard>
-              </motion.div>
-            ))}
+                  <GlassCard className="h-full flex flex-col">
+                    <div className="text-center mb-4">
+                      <div className="text-6xl mb-2">{ITEM_EMOJIS[item.item_id] || "🎁"}</div>
+                      <h3 className="font-bold text-lg">{item.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <Coins className="w-4 h-4 text-yellow-500" />
+                      <span className="font-bold tabular-nums">{item.price}</span>
+                      <span className="text-xs text-muted-foreground">MC</span>
+                    </div>
+
+                    <div className="mt-auto">
+                      {equipped ? (
+                        <ButtonEnhanced onClick={() => handleUnequip(item.item_id)} disabled={equippingItemId === item.item_id} className="w-full" variant="secondary">
+                          <Check className="w-4 h-4 mr-2" />Equipped
+                        </ButtonEnhanced>
+                      ) : owned ? (
+                        <ButtonEnhanced onClick={() => handleEquip(item.item_id)} disabled={equippingItemId === item.item_id} className="w-full">
+                          <Package className="w-4 h-4 mr-2" />Equip
+                        </ButtonEnhanced>
+                      ) : (
+                        <ButtonEnhanced onClick={() => handleBuy(item.item_id, item.price)} disabled={!canAfford || buyingItemId === item.item_id} className="w-full" glow={canAfford}>
+                          {canAfford ? "Buy Now" : "Not Enough Coins"}
+                        </ButtonEnhanced>
+                      )}
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              )
+            })}
           </div>
         )}
-      </motion.div>
+
+        <GlassCard className="mt-8">
+          <div className="flex items-start gap-3">
+            <Coins className="w-5 h-5 text-yellow-500 mt-1" />
+            <div>
+              <h3 className="font-bold mb-1">How to earn MeowCoins</h3>
+              <p className="text-sm text-muted-foreground">
+                Complete lesson exercises and tests to earn MeowCoins. Use them to buy cool accessories for your cat!
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
     </PageTransition>
   )
 }
