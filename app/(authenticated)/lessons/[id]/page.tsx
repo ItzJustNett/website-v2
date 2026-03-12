@@ -103,6 +103,8 @@ export default function LessonDetailPage() {
   const [test, setTest] = useState<Test | null>(null)
   const [testAnswers, setTestAnswers] = useState<Record<number, number>>({})
   const [showTestResults, setShowTestResults] = useState(false)
+  const [testRewards, setTestRewards] = useState<{meowcoins_earned: number, xp_earned: number} | null>(null)
+  const [isSubmittingTest, setIsSubmittingTest] = useState(false)
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
   const [summary, setSummary] = useState<Summary | null>(null)
   const { error: showError, success: showSuccess } = useNotification()
@@ -195,8 +197,44 @@ export default function LessonDetailPage() {
     }))
   }
 
-  const handleSubmitTest = () => {
-    setShowTestResults(true)
+  const handleSubmitTest = async () => {
+    if (!test) return
+
+    try {
+      setIsSubmittingTest(true)
+
+      // Calculate score
+      let correct = 0
+      test.questions.forEach((q, idx) => {
+        if (testAnswers[idx] === q.correct_answer) {
+          correct++
+        }
+      })
+
+      // Submit test results to API
+      const result = await fetchWithAuth(`/lessons/${lessonId}/test/submit`, {
+        method: "POST",
+        body: JSON.stringify({
+          score: correct,
+          total_questions: test.questions.length
+        })
+      })
+
+      setTestRewards({
+        meowcoins_earned: result.meowcoins_earned,
+        xp_earned: result.xp_earned
+      })
+      setShowTestResults(true)
+
+      showSuccess(`Great job! You earned ${result.meowcoins_earned} meowcoins! 🎉`)
+    } catch (err) {
+      console.error("Error submitting test:", err)
+      showError("Failed to submit test results")
+      // Still show results even if submission fails
+      setShowTestResults(true)
+    } finally {
+      setIsSubmittingTest(false)
+    }
   }
 
   const calculateScore = () => {
@@ -342,10 +380,11 @@ export default function LessonDetailPage() {
                       ))}
                       <ButtonEnhanced
                         onClick={handleSubmitTest}
+                        disabled={isSubmittingTest || Object.keys(testAnswers).length === 0}
                         glow
                         className="w-full mt-6"
                       >
-                        Submit Test
+                        {isSubmittingTest ? "Submitting..." : "Submit Test"}
                       </ButtonEnhanced>
                     </div>
                   ) : (
@@ -354,9 +393,29 @@ export default function LessonDetailPage() {
                         <div className="text-5xl font-bold text-primary mb-2">
                           {calculateScore()}%
                         </div>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground mb-4">
                           {Object.keys(testAnswers).length} out of {test.questions.length} questions answered
                         </p>
+
+                        {/* Rewards Display */}
+                        {testRewards && (
+                          <div className="flex items-center justify-center gap-6 mt-6">
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                              <span className="text-2xl">🪙</span>
+                              <div>
+                                <div className="text-sm text-muted-foreground">Meowcoins Earned</div>
+                                <div className="text-xl font-bold text-yellow-500">+{testRewards.meowcoins_earned}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                              <span className="text-2xl">⚡</span>
+                              <div>
+                                <div className="text-sm text-muted-foreground">XP Earned</div>
+                                <div className="text-xl font-bold text-blue-500">+{testRewards.xp_earned}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {test.questions.map((question, qIdx) => {
@@ -391,6 +450,7 @@ export default function LessonDetailPage() {
                           setTest(null)
                           setTestAnswers({})
                           setShowTestResults(false)
+                          setTestRewards(null)
                         }}
                         variant="outline"
                         className="w-full"
