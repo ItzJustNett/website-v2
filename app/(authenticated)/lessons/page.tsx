@@ -84,6 +84,8 @@ export default function LessonsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>("cards")
+  const [userGrade, setUserGrade] = useState<string | null>(null)
+  const [isAutoFiltered, setIsAutoFiltered] = useState(false)
   const { error: showError } = useNotification()
 
   // Extract grade from course_id or lesson ID (e.g., "biolohiya-10" -> "10")
@@ -198,6 +200,27 @@ export default function LessonsPage() {
     return filteredAndSortedLessons.slice(startIndex, endIndex)
   }, [filteredAndSortedLessons, currentPage])
 
+  // Fetch user profile and auto-set grade filter
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profile = await fetchWithAuth("/profiles/me")
+        if (profile && profile.grade) {
+          const gradeStr = profile.grade.toString()
+          setUserGrade(gradeStr)
+          // Auto-set grade filter to user's grade
+          setGradeFilter(gradeStr)
+          setIsAutoFiltered(true)
+        }
+      } catch (err) {
+        // If profile fetch fails, continue with "all" filter
+        console.log("Could not fetch user profile, using default filter")
+      }
+    }
+
+    fetchUserProfile()
+  }, [])
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
@@ -255,6 +278,23 @@ export default function LessonsPage() {
             <BookOpen className="w-8 h-8" />
             Lessons
           </h1>
+          {isAutoFiltered && userGrade && gradeFilter === userGrade && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+              <Filter className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">
+                Showing Grade {userGrade} lessons
+              </span>
+              <button
+                onClick={() => {
+                  setGradeFilter("all")
+                  setIsAutoFiltered(false)
+                }}
+                className="ml-2 text-xs px-2 py-1 rounded bg-background/50 hover:bg-background/80 transition-colors"
+              >
+                View All
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Search Bar and View Toggle */}

@@ -9,6 +9,7 @@ import {
   User,
   Brain,
   Home,
+  Settings,
 } from "lucide-react"
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/store", label: "Store", icon: ShoppingBag },
   { href: "/ai-features", label: "AI Features", icon: Brain },
   { href: "/profile", label: "Profile", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
 ]
 
 export function Sidebar() {

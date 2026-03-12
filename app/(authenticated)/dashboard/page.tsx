@@ -65,6 +65,13 @@ export default function DashboardPage() {
         setProfileData(profData)
       } catch (err) {
         console.error("Error fetching dashboard data:", err)
+
+        // If profile not found, redirect to setup
+        if (err instanceof Error && err.message.includes("Not Found")) {
+          window.location.href = "/setup"
+          return
+        }
+
         showError("Failed to load dashboard data")
         setDashboardData({
           streak: 0,

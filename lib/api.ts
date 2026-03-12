@@ -24,6 +24,16 @@ export async function fetchWithAuth(
   })
 
   if (!response.ok) {
+    // For 401 errors, clear auth and redirect to login
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token")
+        localStorage.removeItem("username")
+        localStorage.removeItem("user_id")
+        window.location.href = "/login"
+      }
+    }
+
     throw new Error(`API Error: ${response.statusText}`)
   }
 
