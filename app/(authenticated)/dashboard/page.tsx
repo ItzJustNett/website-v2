@@ -43,7 +43,7 @@ export default function DashboardPage() {
       try {
         setIsLoading(true)
 
-        const dashDataRaw = await fetchWithAuth("/debug/overview")
+        const dashDataRaw = await fetchWithAuth("/profiles/me/stats")
         const dashData = dashDataRaw && typeof dashDataRaw === "object"
           ? dashDataRaw
           : {

@@ -6,7 +6,7 @@ import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { motion } from "framer-motion"
-import { Zap, BookOpen } from "lucide-react"
+import { Zap, BookOpen, Clock, Trash2, Star, FileText } from "lucide-react"
 import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
@@ -18,10 +18,24 @@ interface Lesson {
   difficulty?: string
 }
 
+interface SavedTest {
+  id: number
+  lesson_id: number | null
+  lesson_title: string | null
+  title: string
+  questions_count: number
+  is_private: boolean
+  is_favorite: boolean
+  created_at: string
+}
+
 export default function TestsPage() {
   const router = useRouter()
   const [lessons, setLessons] = useState<Lesson[]>([])
+  const [savedTests, setSavedTests] = useState<SavedTest[]>([])
+  const [activeTab, setActiveTab] = useState<"create" | "saved">("saved")
   const [isLoading, setIsLoading] = useState(true)
+  const [isSavedTestsLoading, setIsSavedTestsLoading] = useState(true)
   const [creatingTest, setCreatingTest] = useState<string | null>(null)
   const { error: showError, success: showSuccess } = useNotification()
 
@@ -53,19 +67,80 @@ export default function TestsPage() {
     fetchLessons()
   }, [showError])
 
+  useEffect(() => {
+    const fetchSavedTests = async () => {
+      try {
+        setIsSavedTestsLoading(true)
+        const data = await fetchWithAuth("/saved-tests")
+        setSavedTests(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error("Error fetching saved tests:", err)
+        showError("Failed to load saved tests")
+        setSavedTests([])
+      } finally {
+        setIsSavedTestsLoading(false)
+      }
+    }
+
+    fetchSavedTests()
+  }, [showError])
+
   const handleCreateTest = async (lessonId: string) => {
     try {
       setCreatingTest(lessonId)
       await fetchWithAuth(`/lessons/${lessonId}/test`, {
         method: "GET",
       })
-      showSuccess("Test created! Opening lesson...")
+      showSuccess("Test created and saved! Opening lesson...")
+      // Refresh saved tests
+      const data = await fetchWithAuth("/saved-tests")
+      setSavedTests(Array.isArray(data) ? data : [])
       // Navigate to the lesson detail page to view the test
       router.push(`/lessons/${lessonId}`)
     } catch (err) {
       console.error("Error creating test:", err)
       showError("Failed to create test")
       setCreatingTest(null)
+    }
+  }
+
+  const handleDeleteTest = async (testId: number) => {
+    if (!confirm("Are you sure you want to delete this test?")) return
+
+    try {
+      await fetchWithAuth(`/saved-tests/${testId}`, {
+        method: "DELETE",
+      })
+      showSuccess("Test deleted successfully")
+      setSavedTests(savedTests.filter((test) => test.id !== testId))
+    } catch (err) {
+      console.error("Error deleting test:", err)
+      showError("Failed to delete test")
+    }
+  }
+
+  const handleToggleFavorite = async (testId: number) => {
+    try {
+      const response = await fetchWithAuth(`/saved-tests/${testId}/favorite`, {
+        method: "PUT",
+      })
+      showSuccess(response.is_favorite ? "Added to favorites" : "Removed from favorites")
+      setSavedTests(
+        savedTests.map((test) =>
+          test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
+        )
+      )
+    } catch (err) {
+      console.error("Error toggling favorite:", err)
+      showError("Failed to update favorite")
+    }
+  }
+
+  const handleViewTest = async (testId: number, lessonId: number | null) => {
+    if (lessonId) {
+      router.push(`/lessons/${lessonId}?testId=${testId}`)
+    } else {
+      showError("Cannot view test: lesson not found")
     }
   }
 
@@ -81,61 +156,164 @@ export default function TestsPage() {
           Tests
         </h1>
 
-        <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-          <p className="text-sm text-muted-foreground">
-            Select a lesson to create and take a test. Tests help reinforce what you&apos;ve learned!
-          </p>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <ButtonEnhanced
+            onClick={() => setActiveTab("saved")}
+            className={activeTab === "saved" ? "bg-blue-500" : "bg-gray-500/20"}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            My Saved Tests ({savedTests.length})
+          </ButtonEnhanced>
+          <ButtonEnhanced
+            onClick={() => setActiveTab("create")}
+            className={activeTab === "create" ? "bg-blue-500" : "bg-gray-500/20"}
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Create New Test
+          </ButtonEnhanced>
         </div>
 
-        {isLoading ? (
-          <SkeletonLoader type="card" count={3} />
-        ) : lessons.length === 0 ? (
-          <EmptyState
-            icon="📝"
-            title="No lessons to test"
-            description="Complete some lessons first, then you can create tests to reinforce your knowledge!"
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {lessons.map((lesson, index) => (
-              <motion.div
-                key={lesson.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <GlassCard>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{lesson.title}</h3>
-                      <p className="text-xs text-muted-foreground">Test your knowledge</p>
-                    </div>
-                    <BookOpen className="w-5 h-5 text-blue-500 flex-shrink-0 ml-2" />
-                  </div>
+        {/* Saved Tests Tab */}
+        {activeTab === "saved" && (
+          <>
+            <div className="mb-6 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+              <p className="text-sm text-muted-foreground">
+                All your generated tests are automatically saved here. They are private by default.
+              </p>
+            </div>
 
-                  {lesson.difficulty && (
-                    <div className="flex items-center justify-between mb-4 text-sm text-muted-foreground">
-                      <span>{lesson.difficulty}</span>
-                    </div>
-                  )}
-
+            {isSavedTestsLoading ? (
+              <SkeletonLoader type="card" count={3} />
+            ) : savedTests.length === 0 ? (
+              <EmptyState
+                icon="📚"
+                title="No saved tests yet"
+                description="Create a test from the 'Create New Test' tab and it will be automatically saved here!"
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {savedTests.map((test, index) => (
                   <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    key={test.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <ButtonEnhanced
-                      onClick={() => handleCreateTest(lesson.id)}
-                      disabled={creatingTest === lesson.id}
-                      className="w-full"
-                      glow
-                    >
-                      {creatingTest === lesson.id ? "Creating Test..." : "Create & Start Test"}
-                    </ButtonEnhanced>
+                    <GlassCard>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{test.title}</h3>
+                          {test.lesson_title && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {test.lesson_title}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{test.questions_count} questions</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(test.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleToggleFavorite(test.id)}
+                          className="flex-shrink-0 ml-2"
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              test.is_favorite
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <ButtonEnhanced
+                          onClick={() => handleViewTest(test.id, test.lesson_id)}
+                          className="flex-1"
+                          glow
+                        >
+                          View Test
+                        </ButtonEnhanced>
+                        <ButtonEnhanced
+                          onClick={() => handleDeleteTest(test.id)}
+                          className="bg-red-500/20 hover:bg-red-500/30"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </ButtonEnhanced>
+                      </div>
+                    </GlassCard>
                   </motion.div>
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Create Test Tab */}
+        {activeTab === "create" && (
+          <>
+            <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <p className="text-sm text-muted-foreground">
+                Select a lesson to create and take a test. Tests are automatically saved to your profile!
+              </p>
+            </div>
+
+            {isLoading ? (
+              <SkeletonLoader type="card" count={3} />
+            ) : lessons.length === 0 ? (
+              <EmptyState
+                icon="📝"
+                title="No lessons to test"
+                description="Complete some lessons first, then you can create tests to reinforce your knowledge!"
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {lessons.map((lesson, index) => (
+                  <motion.div
+                    key={lesson.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <GlassCard>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-2">{lesson.title}</h3>
+                          <p className="text-xs text-muted-foreground">Test your knowledge</p>
+                        </div>
+                        <BookOpen className="w-5 h-5 text-blue-500 flex-shrink-0 ml-2" />
+                      </div>
+
+                      {lesson.difficulty && (
+                        <div className="flex items-center justify-between mb-4 text-sm text-muted-foreground">
+                          <span>{lesson.difficulty}</span>
+                        </div>
+                      )}
+
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <ButtonEnhanced
+                          onClick={() => handleCreateTest(lesson.id)}
+                          disabled={creatingTest === lesson.id}
+                          className="w-full"
+                          glow
+                        >
+                          {creatingTest === lesson.id ? "Creating Test..." : "Create & Start Test"}
+                        </ButtonEnhanced>
+                      </motion.div>
+                    </GlassCard>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </motion.div>
     </PageTransition>

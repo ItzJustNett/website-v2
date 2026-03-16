@@ -8,7 +8,7 @@ import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { ErrorState } from "@/components/immersive/error-state"
 import { motion } from "framer-motion"
-import { BookOpen, Play, Send, Zap } from "lucide-react"
+import { BookOpen, Play, Send, Zap, ChevronUp, ChevronDown } from "lucide-react"
 import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
 
@@ -107,6 +107,7 @@ export default function LessonDetailPage() {
   const [isSubmittingTest, setIsSubmittingTest] = useState(false)
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
   const [summary, setSummary] = useState<Summary | null>(null)
+  const [videoCollapsed, setVideoCollapsed] = useState(false)
   const { error: showError, success: showSuccess } = useNotification()
 
   const handleSendMessage = async () => {
@@ -298,9 +299,9 @@ export default function LessonDetailPage() {
         transition={{ duration: 0.5 }}
         className="h-screen flex"
       >
-        {/* Main content area - Video takes most space */}
-        <div className="flex-1 flex flex-col">
-          {/* YouTube Video Section - Full width, bigger */}
+        {/* Main content area - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          {/* YouTube Video Section - Collapsible */}
           {lesson.youtube_link && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -308,6 +309,24 @@ export default function LessonDetailPage() {
               transition={{ duration: 0.5 }}
               className="w-full bg-black relative"
             >
+              {/* Collapse/Expand Button */}
+              <button
+                onClick={() => setVideoCollapsed(!videoCollapsed)}
+                className="absolute top-4 left-4 z-50 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur text-white font-medium hover:bg-black/90 transition-colors flex items-center gap-2"
+              >
+                {videoCollapsed ? (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    Show Video
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    Hide Video
+                  </>
+                )}
+              </button>
+
               {/* Status badges overlay on video */}
               {(lesson.difficulty || lesson.completed) && (
                 <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
@@ -324,22 +343,24 @@ export default function LessonDetailPage() {
                 </div>
               )}
 
-              <div className="w-full" style={{ height: 'calc(100vh - 64px)' }}>
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={getYouTubeEmbedUrl(lesson.youtube_link)}
-                  title={lesson.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              </div>
+              {!videoCollapsed && (
+                <div className="w-full aspect-video max-h-[60vh]">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={getYouTubeEmbedUrl(lesson.youtube_link)}
+                    title={lesson.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              )}
             </motion.div>
           )}
 
           {/* Scrollable content below video */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="p-6 space-y-4">
 
             {/* Test Section */}
             {test && (

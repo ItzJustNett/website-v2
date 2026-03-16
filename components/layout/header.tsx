@@ -47,8 +47,9 @@ export function Header({ onSidebarToggle }: HeaderProps) {
       }
     }
 
+    // Only fetch when pathname changes (page navigation)
     fetchCoins()
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     const fetchPageTitle = async () => {
