@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/immersive/empty-state"
 interface SavedTest {
   id: number
   lesson_id: number | null
+  lesson_string_id: string | null  // The actual lesson identifier
   lesson_title: string | null
   title: string
   questions_count: number
@@ -26,6 +27,7 @@ interface SavedTest {
 interface SavedSummary {
   id: number
   lesson_id: number | null
+  lesson_string_id: string | null  // The actual lesson identifier
   lesson_title: string | null
   title: string
   summary: string
@@ -143,17 +145,17 @@ export default function AIFeaturesPage() {
     }
   }
 
-  const handleViewTest = async (testId: number, lessonId: number | null) => {
-    if (lessonId) {
-      router.push(`/lessons/${lessonId}?testId=${testId}`)
+  const handleViewTest = async (test: SavedTest) => {
+    if (test.lesson_string_id) {
+      router.push(`/lessons/${test.lesson_string_id}?testId=${test.id}`)
     } else {
       showError("Неможливо переглянути тест: урок не знайдено")
     }
   }
 
-  const handleViewSummary = async (summaryId: number, lessonId: number | null) => {
-    if (lessonId) {
-      router.push(`/lessons/${lessonId}?summaryId=${summaryId}`)
+  const handleViewSummary = async (summary: SavedSummary) => {
+    if (summary.lesson_string_id) {
+      router.push(`/lessons/${summary.lesson_string_id}?summaryId=${summary.id}`)
     } else {
       showError("Неможливо переглянути конспект: урок не знайдено")
     }
@@ -248,7 +250,7 @@ export default function AIFeaturesPage() {
 
                       <div className="flex gap-2">
                         <ButtonEnhanced
-                          onClick={() => handleViewTest(test.id, test.lesson_id)}
+                          onClick={() => handleViewTest(test)}
                           className="flex-1"
                           glow
                         >
@@ -328,7 +330,7 @@ export default function AIFeaturesPage() {
 
                       <div className="flex gap-2">
                         <ButtonEnhanced
-                          onClick={() => handleViewSummary(summary.id, summary.lesson_id)}
+                          onClick={() => handleViewSummary(summary)}
                           className="flex-1"
                           glow
                         >
