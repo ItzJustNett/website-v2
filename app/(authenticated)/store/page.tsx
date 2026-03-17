@@ -85,7 +85,7 @@ export default function StorePage() {
       setProfile(profileData)
     } catch (err) {
       console.error("Error fetching data:", err)
-      showError("Failed to load store")
+      showError("Не вдалося завантажити магазин")
       setItems([]) // Ensure items is set to empty array on error
     } finally {
       setIsLoading(false)
@@ -94,7 +94,7 @@ export default function StorePage() {
 
   const handleBuy = async (itemId: string, price: number) => {
     if (!profile || profile.meowcoins < price) {
-      showError("Not enough MeowCoins!")
+      showError("Недостатньо MeowCoins!")
       return
     }
 
@@ -106,10 +106,10 @@ export default function StorePage() {
         body: JSON.stringify({ item_id: itemId })
       })
 
-      showSuccess("Item purchased!")
+      showSuccess("Предмет куплено!")
       await fetchData()
     } catch (err) {
-      showError("Failed to purchase item")
+      showError("Не вдалося купити предмет")
     } finally {
       setBuyingItemId(null)
     }
@@ -124,10 +124,10 @@ export default function StorePage() {
         body: JSON.stringify({ item_id: itemId })
       })
 
-      showSuccess("Item equipped!")
+      showSuccess("Предмет екіпіровано!")
       await fetchData()
     } catch (err) {
-      showError("Failed to equip item")
+      showError("Не вдалося екіпірувати предмет")
     } finally {
       setEquippingItemId(null)
     }
@@ -142,10 +142,10 @@ export default function StorePage() {
         body: JSON.stringify({ item_id: itemId })
       })
 
-      showSuccess("Item unequipped!")
+      showSuccess("Предмет знято!")
       await fetchData()
     } catch (err) {
-      showError("Failed to unequip item")
+      showError("Не вдалося зняти предмет")
     } finally {
       setEquippingItemId(null)
     }
@@ -160,7 +160,7 @@ export default function StorePage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Store className="w-8 h-8" />
-            Cat Accessories Store
+            Магазин аксесуарів для котів
           </h1>
 
           {profile && (
@@ -175,7 +175,7 @@ export default function StorePage() {
         {isLoading ? (
           <SkeletonLoader type="card" count={4} />
         ) : items.length === 0 ? (
-          <EmptyState icon="🏪" title="Store is empty" description="Check back later!" />
+          <EmptyState icon="🏪" title="Магазин порожній" description="Повертайтесь пізніше!" />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.isArray(items) && items.map((item, index) => {
@@ -206,15 +206,15 @@ export default function StorePage() {
                     <div className="mt-auto">
                       {equipped ? (
                         <ButtonEnhanced onClick={() => handleUnequip(item.item_id)} disabled={equippingItemId === item.item_id} className="w-full" variant="secondary">
-                          <Check className="w-4 h-4 mr-2" />Equipped
+                          <Check className="w-4 h-4 mr-2" />Екіпіровано
                         </ButtonEnhanced>
                       ) : owned ? (
                         <ButtonEnhanced onClick={() => handleEquip(item.item_id)} disabled={equippingItemId === item.item_id} className="w-full">
-                          <Package className="w-4 h-4 mr-2" />Equip
+                          <Package className="w-4 h-4 mr-2" />Екіпірувати
                         </ButtonEnhanced>
                       ) : (
                         <ButtonEnhanced onClick={() => handleBuy(item.item_id, item.price)} disabled={!canAfford || buyingItemId === item.item_id} className="w-full" glow={canAfford}>
-                          {canAfford ? "Buy Now" : "Not Enough Coins"}
+                          {canAfford ? "Купити зараз" : "Недостатньо монет"}
                         </ButtonEnhanced>
                       )}
                     </div>
@@ -229,9 +229,9 @@ export default function StorePage() {
           <div className="flex items-start gap-3">
             <Coins className="w-5 h-5 text-yellow-500 mt-1" />
             <div>
-              <h3 className="font-bold mb-1">How to earn MeowCoins</h3>
+              <h3 className="font-bold mb-1">Як заробити MeowCoins</h3>
               <p className="text-sm text-muted-foreground">
-                Complete lesson exercises and tests to earn MeowCoins. Use them to buy cool accessories for your cat!
+                Виконуйте вправи та тести, щоб заробляти MeowCoins. Використовуйте їх, щоб купувати круті аксесуари для вашого кота!
               </p>
             </div>
           </div>

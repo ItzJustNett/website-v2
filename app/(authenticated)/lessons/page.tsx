@@ -251,7 +251,7 @@ export default function LessonsPage() {
         setLessons(lessonsData)
       } catch (err) {
         console.error("Error fetching lessons:", err)
-        showError("Failed to load lessons")
+        showError("Не вдалося завантажити уроки")
         setLessons([])
       } finally {
         setIsLoading(false)
@@ -276,13 +276,13 @@ export default function LessonsPage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <BookOpen className="w-8 h-8" />
-            Lessons
+            Уроки
           </h1>
           {isAutoFiltered && userGrade && gradeFilter === userGrade && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
               <Filter className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">
-                Showing Grade {userGrade} lessons
+                Показано уроки {userGrade} класу
               </span>
               <button
                 onClick={() => {
@@ -291,7 +291,7 @@ export default function LessonsPage() {
                 }}
                 className="ml-2 text-xs px-2 py-1 rounded bg-background/50 hover:bg-background/80 transition-colors"
               >
-                View All
+                Показати всі
               </button>
             </div>
           )}
@@ -303,7 +303,7 @@ export default function LessonsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search lessons by name..."
+              placeholder="Пошук уроків за назвою..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-10 py-3 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
@@ -327,7 +327,7 @@ export default function LessonsPage() {
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Card view"
+              title="Вигляд картками"
             >
               <LayoutGrid className="w-5 h-5" />
             </button>
@@ -338,7 +338,7 @@ export default function LessonsPage() {
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="List view"
+              title="Вигляд списком"
             >
               <LayoutList className="w-5 h-5" />
             </button>
@@ -356,9 +356,9 @@ export default function LessonsPage() {
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="title">Sort by Title</option>
-                <option value="xp">Sort by XP</option>
-                <option value="recent">Most Recent</option>
+                <option value="title">Сортувати за назвою</option>
+                <option value="xp">Сортувати за XP</option>
+                <option value="recent">Найновіші</option>
               </select>
             </div>
 
@@ -371,7 +371,7 @@ export default function LessonsPage() {
                   onChange={(e) => setSubjectFilter(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="all">All Subjects</option>
+                  <option value="all">Всі предмети</option>
                   {availableSubjects.map(subject => (
                     <option key={subject} value={subject}>{getSubjectName(subject)}</option>
                   ))}
@@ -388,9 +388,9 @@ export default function LessonsPage() {
                   onChange={(e) => setGradeFilter(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="all">All Grades</option>
+                  <option value="all">Всі класи</option>
                   {availableGrades.map(grade => (
-                    <option key={grade} value={grade}>Grade {grade}</option>
+                    <option key={grade} value={grade}>Клас {grade}</option>
                   ))}
                 </select>
               </div>
@@ -405,7 +405,7 @@ export default function LessonsPage() {
                   onChange={(e) => setDifficultyFilter(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="all">All Difficulties</option>
+                  <option value="all">Всі складності</option>
                   {availableDifficulties.map(difficulty => (
                     <option key={difficulty} value={difficulty}>{difficulty}</option>
                   ))}
@@ -415,7 +415,7 @@ export default function LessonsPage() {
 
             {/* Results count */}
             <div className="flex items-center text-sm text-muted-foreground ml-auto">
-              Showing {((currentPage - 1) * LESSONS_PER_PAGE) + 1}-{Math.min(currentPage * LESSONS_PER_PAGE, filteredAndSortedLessons.length)} of {filteredAndSortedLessons.length} lessons
+              Показано {((currentPage - 1) * LESSONS_PER_PAGE) + 1}-{Math.min(currentPage * LESSONS_PER_PAGE, filteredAndSortedLessons.length)} з {filteredAndSortedLessons.length} уроків
             </div>
           </div>
         )}
@@ -425,14 +425,14 @@ export default function LessonsPage() {
         ) : lessons.length === 0 ? (
           <EmptyState
             icon={searchQuery ? "🔍" : "📚"}
-            title={searchQuery ? "No lessons found" : "No lessons available"}
-            description={searchQuery ? `No results for "${searchQuery}"` : "Check back soon for new learning content!"}
+            title={searchQuery ? "Уроків не знайдено" : "Немає доступних уроків"}
+            description={searchQuery ? `Немає результатів для "${searchQuery}"` : "Повертайтесь незабаром за новим навчальним контентом!"}
           />
         ) : filteredAndSortedLessons.length === 0 ? (
           <EmptyState
             icon="🔍"
-            title="No lessons found"
-            description="Try adjusting your filters"
+            title="Уроків не знайдено"
+            description="Спробуйте змінити фільтри"
           />
         ) : (
           <>
@@ -548,7 +548,7 @@ export default function LessonsPage() {
                   disabled={currentPage === 1}
                   className="px-4 py-2"
                 >
-                  Previous
+                  Назад
                 </ButtonEnhanced>
 
                 <div className="flex items-center gap-2">
@@ -585,7 +585,7 @@ export default function LessonsPage() {
                   disabled={currentPage === totalPages}
                   className="px-4 py-2"
                 >
-                  Next
+                  Далі
                 </ButtonEnhanced>
               </div>
             )}

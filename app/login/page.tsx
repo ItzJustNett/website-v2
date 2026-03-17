@@ -34,10 +34,10 @@ export default function LoginPage() {
     try {
       const result = await login(loginData.username, loginData.password)
       if (result.success) {
-        success("Login successful!")
+        success("Успішний вхід!")
         router.push("/dashboard")
       } else {
-        showError(result.error || "Login failed")
+        showError(result.error || "Помилка входу")
       }
     } finally {
       setIsLoading(false)
@@ -49,7 +49,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     if (registerData.password !== registerData.confirmPassword) {
-      showError("Passwords do not match")
+      showError("Паролі не співпадають")
       setIsLoading(false)
       return
     }
@@ -61,11 +61,11 @@ export default function LoginPage() {
         registerData.email
       )
       if (result.success) {
-        success("Registration successful! Please login.")
+        success("Реєстрація успішна! Будь ласка, увійдіть.")
         setActiveTab("login")
         setLoginData({ username: registerData.username, password: "" })
       } else {
-        showError(result.error || "Registration failed")
+        showError(result.error || "Помилка реєстрації")
       }
     } finally {
       setIsLoading(false)
@@ -89,7 +89,7 @@ export default function LoginPage() {
         <div className="text-center mb-12">
           <h1 className="text-5xl font-serif font-bold mb-3">PureMind</h1>
           <p className="text-lg text-muted-foreground font-sans">
-            Focused learning, minimal distraction
+            Сфокусоване навчання, мінімум відвернень
           </p>
         </div>
 
@@ -98,10 +98,10 @@ export default function LoginPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-white dark:bg-black border border-black dark:border-white rounded-sm">
               <TabsTrigger value="login" className="rounded-none">
-                Login
+                Вхід
               </TabsTrigger>
               <TabsTrigger value="register" className="rounded-none">
-                Register
+                Реєстрація
               </TabsTrigger>
             </TabsList>
 
@@ -110,11 +110,11 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-5">
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Username
+                    Ім'я користувача
                   </label>
                   <InputEnhanced
                     type="text"
-                    placeholder="your username"
+                    placeholder="ваше ім'я користувача"
                     value={loginData.username}
                     onChange={(e) =>
                       setLoginData({
@@ -128,11 +128,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Password
+                    Пароль
                   </label>
                   <InputEnhanced
                     type="password"
-                    placeholder="your password"
+                    placeholder="ваш пароль"
                     value={loginData.password}
                     onChange={(e) =>
                       setLoginData({
@@ -149,7 +149,7 @@ export default function LoginPage() {
                   variant="primary"
                   className="w-full"
                 >
-                  {isLoading ? "Logging in..." : "Login"}
+                  {isLoading ? "Вхід..." : "Увійти"}
                 </EditorialButton>
               </form>
 
@@ -161,11 +161,11 @@ export default function LoginPage() {
               <form onSubmit={handleRegister} className="space-y-5">
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Username
+                    Ім'я користувача
                   </label>
                   <InputEnhanced
                     type="text"
-                    placeholder="choose a username"
+                    placeholder="оберіть ім'я користувача"
                     value={registerData.username}
                     onChange={(e) =>
                       setRegisterData({
@@ -179,11 +179,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Email
+                    Електронна пошта
                   </label>
                   <InputEnhanced
                     type="email"
-                    placeholder="your email"
+                    placeholder="ваша електронна пошта"
                     value={registerData.email}
                     onChange={(e) =>
                       setRegisterData({
@@ -197,11 +197,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Password
+                    Пароль
                   </label>
                   <InputEnhanced
                     type="password"
-                    placeholder="create a password"
+                    placeholder="створіть пароль"
                     value={registerData.password}
                     onChange={(e) =>
                       setRegisterData({
@@ -215,11 +215,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Confirm Password
+                    Підтвердіть пароль
                   </label>
                   <InputEnhanced
                     type="password"
-                    placeholder="confirm password"
+                    placeholder="підтвердіть пароль"
                     value={registerData.confirmPassword}
                     onChange={(e) =>
                       setRegisterData({
@@ -236,7 +236,7 @@ export default function LoginPage() {
                   variant="primary"
                   className="w-full"
                 >
-                  {isLoading ? "Creating account..." : "Register"}
+                  {isLoading ? "Створення акаунту..." : "Зареєструватися"}
                 </EditorialButton>
               </form>
 
@@ -252,7 +252,7 @@ export default function LoginPage() {
           transition={{ duration: 0.4, delay: 0.2 }}
           className="text-center text-xs text-muted-foreground mt-8 font-sans"
         >
-          By logging in, you agree to our Terms of Service and Privacy Policy
+          Входячи, ви погоджуєтесь з нашими Умовами використання та Політикою конфіденційності
         </motion.p>
       </motion.div>
     </motion.div>

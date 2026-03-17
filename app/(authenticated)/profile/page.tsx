@@ -40,11 +40,11 @@ export default function ProfilePage() {
         if (data && typeof data === "object") {
           setProfile(data as UserProfile)
         } else {
-          showError("Invalid profile data")
+          showError("Невірні дані профілю")
         }
       } catch (err) {
         console.error("Error fetching profile:", err)
-        showError("Failed to load profile")
+        showError("Не вдалося завантажити профіль")
       } finally {
         setIsLoading(false)
       }
@@ -56,19 +56,19 @@ export default function ProfilePage() {
   }, [showError, isLoading])
 
   const achievements = [
-    { name: "First Steps", icon: "👣", unlocked: profile && profile.lessons_completed > 0 },
+    { name: "Перші кроки", icon: "👣", unlocked: profile && profile.lessons_completed > 0 },
     {
-      name: "7 Day Streak",
+      name: "Серія 7 днів",
       icon: "🔥",
       unlocked: profile && profile.streak >= 7,
     },
     {
-      name: "100 Lessons",
+      name: "100 уроків",
       icon: "📚",
       unlocked: profile && profile.lessons_completed >= 100,
     },
     {
-      name: "Expert Level",
+      name: "Експертний рівень",
       icon: "🏆",
       unlocked: profile && profile.level >= 10,
     },
@@ -105,7 +105,7 @@ export default function ProfilePage() {
               <p className="text-sm font-sans text-muted-foreground">{profile.email}</p>
             )}
             <p className="text-sm font-sans text-muted-foreground">
-              Level {profile?.level || 0} · {profile?.streak || 0} day streak · {profile?.meowcoins || 0} coins
+              Рівень {profile?.level || 0} · Серія {profile?.streak || 0} днів · {profile?.meowcoins || 0} монет
             </p>
           </div>
         </div>
@@ -114,10 +114,10 @@ export default function ProfilePage() {
         {profile && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <EditorialStat value={profile.level} label="Level" size="lg" />
-              <EditorialStat value={profile.streak} label="Day Streak" size="lg" />
-              <EditorialStat value={profile.meowcoins} label="Coins" size="lg" />
-              <EditorialStat value={profile.lessons_completed} label="Lessons" size="lg" />
+              <EditorialStat value={profile.level} label="Рівень" size="lg" />
+              <EditorialStat value={profile.streak} label="Днів підряд" size="lg" />
+              <EditorialStat value={profile.meowcoins} label="Монет" size="lg" />
+              <EditorialStat value={profile.lessons_completed} label="Уроків" size="lg" />
             </div>
 
             {/* Divider */}
@@ -125,24 +125,24 @@ export default function ProfilePage() {
 
             {/* Progress Section */}
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-8">Progress</h2>
+              <h2 className="text-3xl font-serif font-bold mb-8">Прогрес</h2>
               <div className="space-y-8">
                 <EditorialProgress
                   value={profile.lessons_completed}
                   max={100}
-                  label="Lessons Completed"
+                  label="Уроків виконано"
                   showPercentage={false}
                 />
                 <EditorialProgress
                   value={profile.tests_completed}
                   max={50}
-                  label="Tests Completed"
+                  label="Тестів виконано"
                   showPercentage={false}
                 />
                 <EditorialProgress
                   value={profile.xp}
                   max={profile.max_xp}
-                  label={`Level ${profile.level} Experience`}
+                  label={`Досвід рівня ${profile.level}`}
                   showPercentage={true}
                 />
               </div>
@@ -153,7 +153,7 @@ export default function ProfilePage() {
 
             {/* Achievements */}
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-8">Achievements</h2>
+              <h2 className="text-3xl font-serif font-bold mb-8">Досягнення</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {achievements.map((achievement, index) => (
                   <EditorialCard
@@ -165,7 +165,7 @@ export default function ProfilePage() {
                       <p className="text-sm font-sans font-medium">{achievement.name}</p>
                       {achievement.unlocked && (
                         <p className="text-xs font-sans text-muted-foreground mt-2">
-                          Unlocked
+                          Відкрито
                         </p>
                       )}
                     </div>
@@ -179,19 +179,19 @@ export default function ProfilePage() {
 
             {/* Settings Section */}
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-8">Settings</h2>
+              <h2 className="text-3xl font-serif font-bold mb-8">Налаштування</h2>
               <EditorialCard>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between pb-6 border-b border-black dark:border-white">
-                    <span className="font-sans font-medium">Theme</span>
-                    <span className="text-sm text-muted-foreground">System</span>
+                    <span className="font-sans font-medium">Тема</span>
+                    <span className="text-sm text-muted-foreground">Системна</span>
                   </div>
                   <div className="flex items-center justify-between pb-6 border-b border-black dark:border-white">
-                    <span className="font-sans font-medium">Notifications</span>
-                    <span className="text-sm text-muted-foreground">Enabled</span>
+                    <span className="font-sans font-medium">Сповіщення</span>
+                    <span className="text-sm text-muted-foreground">Увімкнено</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-sans font-medium">Account Created</span>
+                    <span className="font-sans font-medium">Акаунт створено</span>
                     <span className="text-sm text-muted-foreground">2024</span>
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                 className="w-full justify-start"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                Вийти
               </EditorialButton>
             </motion.div>
           </>

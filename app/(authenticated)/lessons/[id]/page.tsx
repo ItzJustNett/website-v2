@@ -92,7 +92,7 @@ export default function LessonDetailPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! 👋 I'm your AI assistant. Ask me anything about this lesson!",
+      text: "Привіт! 👋 Я ваш AI асистент. Запитуйте мене про цей урок!",
       sender: "ai",
       timestamp: new Date(),
     },
@@ -128,7 +128,7 @@ export default function LessonDetailPage() {
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "That's a great question! I'm currently learning about this topic. You can ask me about the lesson content, and I'll do my best to help! 🤖",
+        text: "Чудове питання! Я зараз вивчаю цю тему. Можете запитувати мене про вміст уроку, і я зроблю все можливе, щоб допомогти! 🤖",
         sender: "ai",
         timestamp: new Date(),
       }
@@ -148,10 +148,10 @@ export default function LessonDetailPage() {
       setTest(testData)
       setTestAnswers({})
       setShowTestResults(false)
-      showSuccess("Test created! Scroll down to view the test.")
+      showSuccess("Тест створено! Прокрутіть вниз, щоб переглянути тест.")
     } catch (err) {
       console.error("Error creating test:", err)
-      showError("Failed to create test")
+      showError("Не вдалося створити тест")
     } finally {
       setIsCreatingTest(false)
     }
@@ -165,10 +165,10 @@ export default function LessonDetailPage() {
       })
 
       setSummary(summaryData)
-      showSuccess("Summary generated! Scroll down to view it.")
+      showSuccess("Конспект згенеровано! Прокрутіть вниз, щоб переглянути.")
     } catch (err) {
       console.error("Error generating summary:", err)
-      showError("Failed to generate summary")
+      showError("Не вдалося згенерувати конспект")
     } finally {
       setIsGeneratingSummary(false)
     }
@@ -210,10 +210,10 @@ export default function LessonDetailPage() {
       })
       setShowTestResults(true)
 
-      showSuccess(`Great job! You earned ${result.meowcoins_earned} meowcoins! 🎉`)
+      showSuccess(`Чудова робота! Ви заробили ${result.meowcoins_earned} монет! 🎉`)
     } catch (err) {
       console.error("Error submitting test:", err)
-      showError("Failed to submit test results")
+      showError("Не вдалося відправити результати тесту")
       // Still show results even if submission fails
       setShowTestResults(true)
     } finally {
@@ -267,8 +267,8 @@ export default function LessonDetailPage() {
       <PageTransition>
         <ErrorState
           icon="⚠️"
-          title="Lesson not found"
-          message={error || "The lesson you're looking for doesn't exist."}
+          title="Урок не знайдено"
+          message={error || "Урок, який ви шукаєте, не існує."}
         />
       </PageTransition>
     )
@@ -300,12 +300,12 @@ export default function LessonDetailPage() {
                 {videoCollapsed ? (
                   <>
                     <ChevronDown className="w-4 h-4" />
-                    Show Video
+                    Показати відео
                   </>
                 ) : (
                   <>
                     <ChevronUp className="w-4 h-4" />
-                    Hide Video
+                    Сховати відео
                   </>
                 )}
               </button>
@@ -320,7 +320,7 @@ export default function LessonDetailPage() {
                   )}
                   {lesson.completed && (
                     <span className="text-xs px-3 py-1.5 rounded-full bg-green-500/90 backdrop-blur text-white">
-                      ✓ Completed
+                      ✓ Виконано
                     </span>
                   )}
                 </div>
@@ -353,7 +353,7 @@ export default function LessonDetailPage() {
                 transition={{ duration: 0.5 }}
               >
                 <GlassCard>
-                  <h2 className="text-2xl font-bold mb-6">Test: {test.title}</h2>
+                  <h2 className="text-2xl font-bold mb-6">Тест: {test.title}</h2>
 
                   {!showTestResults ? (
                     <div className="space-y-6">
@@ -388,7 +388,7 @@ export default function LessonDetailPage() {
                         glow
                         className="w-full mt-6"
                       >
-                        {isSubmittingTest ? "Submitting..." : "Submit Test"}
+                        {isSubmittingTest ? "Відправлення..." : "Відправити тест"}
                       </ButtonEnhanced>
                     </div>
                   ) : (
@@ -398,7 +398,7 @@ export default function LessonDetailPage() {
                           {calculateScore()}%
                         </div>
                         <p className="text-muted-foreground mb-4">
-                          {Object.keys(testAnswers).length} out of {test.questions.length} questions answered
+                          Відповіли на {Object.keys(testAnswers).length} з {test.questions.length} питань
                         </p>
 
                         {/* Rewards Display */}
@@ -407,14 +407,14 @@ export default function LessonDetailPage() {
                             <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                               <span className="text-2xl">🪙</span>
                               <div>
-                                <div className="text-sm text-muted-foreground">Meowcoins Earned</div>
+                                <div className="text-sm text-muted-foreground">Зароблено монет</div>
                                 <div className="text-xl font-bold text-yellow-500">+{testRewards.meowcoins_earned}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
                               <span className="text-2xl">⚡</span>
                               <div>
-                                <div className="text-sm text-muted-foreground">XP Earned</div>
+                                <div className="text-sm text-muted-foreground">Зароблено XP</div>
                                 <div className="text-xl font-bold text-blue-500">+{testRewards.xp_earned}</div>
                               </div>
                             </div>
@@ -438,11 +438,11 @@ export default function LessonDetailPage() {
                               {qIdx + 1}. {question.question}
                             </p>
                             <p className="text-sm mb-2">
-                              Your answer: {userAnswer !== undefined ? question.options[userAnswer] : "Not answered"}
+                              Ваша відповідь: {userAnswer !== undefined ? question.options[userAnswer] : "Не відповіли"}
                             </p>
                             {!isCorrect && (
                               <p className="text-sm text-green-400">
-                                Correct answer: {question.options[question.correct_answer]}
+                                Правильна відповідь: {question.options[question.correct_answer]}
                               </p>
                             )}
                           </div>
@@ -459,7 +459,7 @@ export default function LessonDetailPage() {
                         variant="outline"
                         className="w-full"
                       >
-                        Retake Test
+                        Пройти тест знову
                       </ButtonEnhanced>
                     </div>
                   )}
@@ -475,7 +475,7 @@ export default function LessonDetailPage() {
                 transition={{ duration: 0.5 }}
               >
                 <GlassCard>
-                  <h2 className="text-2xl font-bold mb-6">📝 Summary: {summary.title}</h2>
+                  <h2 className="text-2xl font-bold mb-6">📝 Конспект: {summary.title}</h2>
 
                   <div className="space-y-6">
                     {/* Main Summary Text */}
@@ -488,7 +488,7 @@ export default function LessonDetailPage() {
                     {/* Key Points */}
                     {summary.key_points && summary.key_points.length > 0 && (
                       <div className="mt-6">
-                        <h3 className="text-lg font-semibold mb-4">🔑 Key Points:</h3>
+                        <h3 className="text-lg font-semibold mb-4">🔑 Ключові моменти:</h3>
                         <ul className="space-y-2">
                           {summary.key_points.map((point, idx) => (
                             <li
@@ -511,7 +511,7 @@ export default function LessonDetailPage() {
                       variant="outline"
                       className="w-full mt-6"
                     >
-                      Close Summary
+                      Закрити конспект
                     </ButtonEnhanced>
                   </div>
                 </GlassCard>
@@ -530,10 +530,10 @@ export default function LessonDetailPage() {
             <ButtonEnhanced
               glow
               className="flex flex-col items-center justify-center w-full h-14 p-1"
-              title="Start lesson"
+              title="Розпочати урок"
             >
               <Play className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">Start</span>
+              <span className="text-[9px]">Старт</span>
             </ButtonEnhanced>
 
             <ButtonEnhanced
@@ -541,10 +541,10 @@ export default function LessonDetailPage() {
               className="flex flex-col items-center justify-center w-full h-14 p-1"
               onClick={handleCreateTest}
               disabled={isCreatingTest}
-              title="Take test"
+              title="Пройти тест"
             >
               <Zap className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">{isCreatingTest ? "..." : "Test"}</span>
+              <span className="text-[9px]">{isCreatingTest ? "..." : "Тест"}</span>
             </ButtonEnhanced>
 
             <ButtonEnhanced
@@ -552,10 +552,10 @@ export default function LessonDetailPage() {
               disabled={isGeneratingSummary}
               variant="outline"
               className="flex flex-col items-center justify-center w-full h-14 p-1"
-              title="Generate summary"
+              title="Згенерувати конспект"
             >
               <BookOpen className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">{isGeneratingSummary ? "..." : "Summary"}</span>
+              <span className="text-[9px]">{isGeneratingSummary ? "..." : "Конспект"}</span>
             </ButtonEnhanced>
           </motion.div>
       </motion.div>

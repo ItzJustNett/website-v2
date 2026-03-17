@@ -13,13 +13,13 @@ import {
 } from "lucide-react"
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/lessons", label: "Lessons", icon: BookOpen },
-  { href: "/tests", label: "Tests", icon: Zap },
-  { href: "/store", label: "Store", icon: ShoppingBag },
-  { href: "/ai-features", label: "AI Features", icon: Brain },
-  { href: "/profile", label: "Profile", icon: User },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Головна", icon: Home },
+  { href: "/lessons", label: "Уроки", icon: BookOpen },
+  { href: "/tests", label: "Тести", icon: Zap },
+  { href: "/store", label: "Магазин", icon: ShoppingBag },
+  { href: "/ai-features", label: "AI Функції", icon: Brain },
+  { href: "/profile", label: "Профіль", icon: User },
+  { href: "/settings", label: "Налаштування", icon: Settings },
 ]
 
 export function Sidebar() {
@@ -62,7 +62,7 @@ export function Sidebar() {
         {/* Bottom info */}
         <div className="pt-6 border-t border-black dark:border-white">
           <p className="text-xs text-muted-foreground px-4 font-sans">
-            Editorial Edition
+            Редакційна версія
           </p>
         </div>
       </nav>

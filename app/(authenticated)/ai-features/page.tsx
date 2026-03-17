@@ -25,14 +25,14 @@ export default function AIFeaturesPage() {
       >
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <Brain className="w-8 h-8" />
-          AI Features
+          AI функції
         </h1>
 
         <Tabs defaultValue="tts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="tts">Text-to-Speech</TabsTrigger>
-            <TabsTrigger value="summary">Summaries</TabsTrigger>
-            <TabsTrigger value="tools">AI Tools</TabsTrigger>
+            <TabsTrigger value="tts">Озвучування тексту</TabsTrigger>
+            <TabsTrigger value="summary">Конспекти</TabsTrigger>
+            <TabsTrigger value="tools">AI інструменти</TabsTrigger>
           </TabsList>
 
           {/* Text-to-Speech */}
@@ -40,10 +40,10 @@ export default function AIFeaturesPage() {
             <GlassCard>
               <div className="flex items-center gap-3 mb-4">
                 <Volume2 className="w-6 h-6 text-blue-500" />
-                <h2 className="text-2xl font-bold">Text-to-Speech</h2>
+                <h2 className="text-2xl font-bold">Озвучування тексту</h2>
               </div>
               <p className="text-muted-foreground mb-6">
-                Listen to lessons with AI-powered voice narration
+                Слухайте уроки з озвученням від штучного інтелекту
               </p>
               <motion.div
                 animate={isProcessing ? { scale: [1, 1.05, 1] } : {}}
@@ -55,7 +55,7 @@ export default function AIFeaturesPage() {
                   className="w-full"
                   glow
                 >
-                  {isProcessing ? "Playing..." : "Play Lesson Audio"}
+                  {isProcessing ? "Відтворення..." : "Відтворити аудіо уроку"}
                 </ButtonEnhanced>
               </motion.div>
             </GlassCard>
@@ -66,10 +66,10 @@ export default function AIFeaturesPage() {
             <GlassCard>
               <div className="flex items-center gap-3 mb-4">
                 <Lightbulb className="w-6 h-6 text-yellow-500" />
-                <h2 className="text-2xl font-bold">Instant Summaries</h2>
+                <h2 className="text-2xl font-bold">Миттєві конспекти</h2>
               </div>
               <p className="text-muted-foreground mb-6">
-                Get AI-generated summaries of your lessons
+                Отримуйте конспекти уроків, створені штучним інтелектом
               </p>
               <motion.div
                 animate={isProcessing ? { scale: [1, 1.05, 1] } : {}}
@@ -81,7 +81,7 @@ export default function AIFeaturesPage() {
                   className="w-full"
                   glow
                 >
-                  {isProcessing ? "Generating..." : "Generate Summary"}
+                  {isProcessing ? "Генерація..." : "Згенерувати конспект"}
                 </ButtonEnhanced>
               </motion.div>
             </GlassCard>
@@ -92,10 +92,10 @@ export default function AIFeaturesPage() {
             <GlassCard>
               <div className="flex items-center gap-3 mb-4">
                 <Brain className="w-6 h-6 text-purple-500" />
-                <h2 className="text-2xl font-bold">AI Assistant</h2>
+                <h2 className="text-2xl font-bold">AI асистент</h2>
               </div>
               <p className="text-muted-foreground mb-6">
-                Get instant answers and explanations from our AI tutor
+                Отримуйте миттєві відповіді та пояснення від нашого AI репетитора
               </p>
               <motion.div
                 animate={isProcessing ? { scale: [1, 1.05, 1] } : {}}
@@ -107,7 +107,7 @@ export default function AIFeaturesPage() {
                   className="w-full"
                   glow
                 >
-                  {isProcessing ? "Thinking..." : "Ask AI Assistant"}
+                  {isProcessing ? "Думаю..." : "Запитати AI асистента"}
                 </ButtonEnhanced>
               </motion.div>
             </GlassCard>

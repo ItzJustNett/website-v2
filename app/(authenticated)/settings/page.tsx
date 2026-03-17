@@ -12,9 +12,9 @@ import { useNotification } from "@/contexts/notification-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
 const CATS = [
-  { id: 0, name: "Orange Cat", emoji: "🐱" },
-  { id: 1, name: "Gray Cat", emoji: "😺" },
-  { id: 2, name: "Black Cat", emoji: "😸" }
+  { id: 0, name: "Рудий кіт", emoji: "🐱" },
+  { id: 1, name: "Сірий кіт", emoji: "😺" },
+  { id: 2, name: "Чорний кіт", emoji: "😸" }
 ]
 
 export default function SettingsPage() {
@@ -43,7 +43,7 @@ export default function SettingsPage() {
         setSelectedCat(data.cat_id ?? null)
       } catch (err) {
         console.error("Error fetching profile:", err)
-        showError("Failed to load profile")
+        showError("Не вдалося завантажити профіль")
       } finally {
         setIsLoading(false)
       }
@@ -61,9 +61,9 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
       })
-      showSuccess("Email updated successfully")
+      showSuccess("Електронну пошту оновлено")
     } catch (err) {
-      showError("Failed to update email")
+      showError("Не вдалося оновити електронну пошту")
     } finally {
       setIsSaving(false)
     }
@@ -78,9 +78,9 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username })
       })
-      showSuccess("Username updated successfully")
+      showSuccess("Ім'я користувача оновлено")
     } catch (err) {
-      showError("Failed to update username")
+      showError("Не вдалося оновити ім'я користувача")
     } finally {
       setIsSaving(false)
     }
@@ -88,7 +88,7 @@ export default function SettingsPage() {
 
   const handleUpdatePassword = async () => {
     if (!currentPassword || !newPassword) {
-      showError("Please fill in all password fields")
+      showError("Будь ласка, заповніть всі поля паролю")
       return
     }
     try {
@@ -101,11 +101,11 @@ export default function SettingsPage() {
           new_password: newPassword
         })
       })
-      showSuccess("Password updated successfully")
+      showSuccess("Пароль оновлено")
       setCurrentPassword("")
       setNewPassword("")
     } catch (err) {
-      showError("Failed to update password")
+      showError("Не вдалося оновити пароль")
     } finally {
       setIsSaving(false)
     }
@@ -113,7 +113,7 @@ export default function SettingsPage() {
 
   const handleUpdateProfile = async () => {
     if (selectedGrade === null || selectedCat === null) {
-      showError("Please select both grade and cat")
+      showError("Будь ласка, виберіть клас та кота")
       return
     }
     try {
@@ -127,9 +127,9 @@ export default function SettingsPage() {
           cat_id: selectedCat
         })
       })
-      showSuccess("Profile updated successfully")
+      showSuccess("Профіль оновлено")
     } catch (err) {
-      showError("Failed to update profile")
+      showError("Не вдалося оновити профіль")
     } finally {
       setIsSaving(false)
     }
@@ -141,7 +141,7 @@ export default function SettingsPage() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
             <Settings className="w-8 h-8" />
-            Account Settings
+            Налаштування акаунту
           </h1>
           <SkeletonLoader type="card" count={3} />
         </div>
@@ -162,7 +162,7 @@ export default function SettingsPage() {
           <GlassCard>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <User className="w-5 h-5" />
-              Profile
+              Профіль
             </h2>
 
             <div className="space-y-4">
@@ -170,7 +170,7 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-sm font-bold mb-2 flex items-center gap-2">
                   <GraduationCap className="w-4 h-4" />
-                  Grade
+                  Клас
                 </label>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                   {GRADES.map((grade) => (
@@ -193,7 +193,7 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-sm font-bold mb-2 flex items-center gap-2">
                   <Cat className="w-4 h-4" />
-                  Cat
+                  Кіт
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {CATS.map((cat) => (
@@ -218,7 +218,7 @@ export default function SettingsPage() {
                 disabled={isSaving}
                 className="w-full"
               >
-                Update Profile
+                Оновити профіль
               </ButtonEnhanced>
             </div>
           </GlassCard>
@@ -227,13 +227,13 @@ export default function SettingsPage() {
           <GlassCard>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              Account
+              Акаунт
             </h2>
 
             <div className="space-y-4">
               {/* Email */}
               <div>
-                <label className="block text-sm font-bold mb-2">Email</label>
+                <label className="block text-sm font-bold mb-2">Електронна пошта</label>
                 <div className="flex gap-2">
                   <input
                     type="email"
@@ -243,21 +243,21 @@ export default function SettingsPage() {
                     placeholder="your.email@example.com"
                   />
                   <ButtonEnhanced onClick={handleUpdateEmail} disabled={isSaving}>
-                    Update
+                    Оновити
                   </ButtonEnhanced>
                 </div>
               </div>
 
               {/* Username */}
               <div>
-                <label className="block text-sm font-bold mb-2">Username</label>
+                <label className="block text-sm font-bold mb-2">Ім'я користувача</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="flex-1 px-4 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="username"
+                    placeholder="ім'я користувача"
                   />
                   <ButtonEnhanced onClick={handleUpdateUsername} disabled={isSaving}>
                     Update
@@ -271,12 +271,12 @@ export default function SettingsPage() {
           <GlassCard>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Lock className="w-5 h-5" />
-              Security
+              Безпека
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold mb-2">Current Password</label>
+                <label className="block text-sm font-bold mb-2">Поточний пароль</label>
                 <input
                   type="password"
                   value={currentPassword}
@@ -287,7 +287,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2">New Password</label>
+                <label className="block text-sm font-bold mb-2">Новий пароль</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                 disabled={isSaving || !currentPassword || !newPassword}
                 className="w-full"
               >
-                Change Password
+                Змінити пароль
               </ButtonEnhanced>
             </div>
           </GlassCard>

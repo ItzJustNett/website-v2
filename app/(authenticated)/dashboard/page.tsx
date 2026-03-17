@@ -72,7 +72,7 @@ export default function DashboardPage() {
           return
         }
 
-        showError("Failed to load dashboard data")
+        showError("Не вдалося завантажити дані панелі")
         setDashboardData({
           streak: 0,
           lessons_completed: 0,
@@ -117,22 +117,22 @@ export default function DashboardPage() {
 
   const quickActions = [
     {
-      title: "Start Lesson",
+      title: "Розпочати урок",
       href: "/lessons",
       icon: BookOpen,
     },
     {
-      title: "Take Test",
+      title: "Пройти тест",
       href: "/tests",
       icon: Zap,
     },
     {
-      title: "Visit Store",
+      title: "Відвідати магазин",
       href: "/store",
       icon: ShoppingBag,
     },
     {
-      title: "AI Features",
+      title: "AI функції",
       href: "/ai-features",
       icon: Brain,
     },
@@ -149,21 +149,21 @@ export default function DashboardPage() {
         {/* Welcome Header */}
         <div>
           <h1 className="text-5xl font-serif font-bold mb-4">
-            Welcome, {user?.username}
+            Вітаємо, {user?.username}
           </h1>
           <p className="text-lg text-muted-foreground font-sans">
             {stats.streak > 0
-              ? `You're on a ${stats.streak}-day streak. Keep it going.`
-              : "Start your learning journey today."}
+              ? `У вас серія ${stats.streak} днів. Продовжуйте!`
+              : "Розпочніть свою навчальну подорож сьогодні."}
           </p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <EditorialStat value={stats.streak} label="Day Streak" size="lg" />
-          <EditorialStat value={stats.lessonsCompleted} label="Lessons Done" size="lg" />
-          <EditorialStat value={stats.testsCompleted} label="Tests Passed" size="lg" />
-          <EditorialStat value={`Lvl ${stats.level}`} label="Current Level" size="lg" />
+          <EditorialStat value={stats.streak} label="Днів підряд" size="lg" />
+          <EditorialStat value={stats.lessonsCompleted} label="Уроків виконано" size="lg" />
+          <EditorialStat value={stats.testsCompleted} label="Тестів здано" size="lg" />
+          <EditorialStat value={`Рів ${stats.level}`} label="Поточний рівень" size="lg" />
         </div>
 
         {/* Divider */}
@@ -171,24 +171,24 @@ export default function DashboardPage() {
 
         {/* Progress Section */}
         <div>
-          <h2 className="text-3xl font-serif font-bold mb-8">Progress</h2>
+          <h2 className="text-3xl font-serif font-bold mb-8">Прогрес</h2>
           <div className="space-y-6">
             <EditorialProgress
               value={stats.lessonsCompleted}
               max={100}
-              label="Lessons Completed"
+              label="Уроків виконано"
               showPercentage={false}
             />
             <EditorialProgress
               value={stats.testsCompleted}
               max={50}
-              label="Tests Completed"
+              label="Тестів виконано"
               showPercentage={false}
             />
             <EditorialProgress
               value={stats.currentXP}
               max={stats.maxXP}
-              label={`Level ${stats.level} Progress`}
+              label={`Прогрес рівня ${stats.level}`}
               showPercentage={true}
             />
           </div>
@@ -202,19 +202,19 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             <div>
               <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
-                Available Coins
+                Доступно монет
               </p>
               <p className="text-4xl font-serif font-bold">{stats.coins}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
-                Current Level
+                Поточний рівень
               </p>
               <p className="text-4xl font-serif font-bold">{stats.level}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
-                Total XP
+                Загалом XP
               </p>
               <p className="text-4xl font-serif font-bold">{stats.currentXP}</p>
             </div>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-3xl font-serif font-bold mb-8">Actions</h2>
+          <h2 className="text-3xl font-serif font-bold mb-8">Дії</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {quickActions.map((action) => {
               const Icon = action.icon

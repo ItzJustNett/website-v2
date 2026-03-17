@@ -57,7 +57,7 @@ export default function TestsPage() {
         setLessons(lessonsData)
       } catch (err) {
         console.error("Error fetching lessons:", err)
-        showError("Failed to load lessons")
+        showError("Не вдалося завантажити уроки")
         setLessons([])
       } finally {
         setIsLoading(false)
@@ -75,7 +75,7 @@ export default function TestsPage() {
         setSavedTests(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error("Error fetching saved tests:", err)
-        showError("Failed to load saved tests")
+        showError("Не вдалося завантажити збережені тести")
         setSavedTests([])
       } finally {
         setIsSavedTestsLoading(false)
@@ -91,7 +91,7 @@ export default function TestsPage() {
       await fetchWithAuth(`/lessons/${lessonId}/test`, {
         method: "GET",
       })
-      showSuccess("Test created and saved! Opening lesson...")
+      showSuccess("Тест створено та збережено! Відкриття уроку...")
       // Refresh saved tests
       const data = await fetchWithAuth("/saved-tests")
       setSavedTests(Array.isArray(data) ? data : [])
@@ -99,23 +99,23 @@ export default function TestsPage() {
       router.push(`/lessons/${lessonId}`)
     } catch (err) {
       console.error("Error creating test:", err)
-      showError("Failed to create test")
+      showError("Не вдалося створити тест")
       setCreatingTest(null)
     }
   }
 
   const handleDeleteTest = async (testId: number) => {
-    if (!confirm("Are you sure you want to delete this test?")) return
+    if (!confirm("Ви впевнені, що хочете видалити цей тест?")) return
 
     try {
       await fetchWithAuth(`/saved-tests/${testId}`, {
         method: "DELETE",
       })
-      showSuccess("Test deleted successfully")
+      showSuccess("Тест успішно видалено")
       setSavedTests(savedTests.filter((test) => test.id !== testId))
     } catch (err) {
       console.error("Error deleting test:", err)
-      showError("Failed to delete test")
+      showError("Не вдалося видалити тест")
     }
   }
 
@@ -124,7 +124,7 @@ export default function TestsPage() {
       const response = await fetchWithAuth(`/saved-tests/${testId}/favorite`, {
         method: "PUT",
       })
-      showSuccess(response.is_favorite ? "Added to favorites" : "Removed from favorites")
+      showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
       setSavedTests(
         savedTests.map((test) =>
           test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
@@ -132,7 +132,7 @@ export default function TestsPage() {
       )
     } catch (err) {
       console.error("Error toggling favorite:", err)
-      showError("Failed to update favorite")
+      showError("Не вдалося оновити обране")
     }
   }
 
@@ -140,7 +140,7 @@ export default function TestsPage() {
     if (lessonId) {
       router.push(`/lessons/${lessonId}?testId=${testId}`)
     } else {
-      showError("Cannot view test: lesson not found")
+      showError("Неможливо переглянути тест: урок не знайдено")
     }
   }
 
@@ -153,7 +153,7 @@ export default function TestsPage() {
       >
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <Zap className="w-8 h-8" />
-          Tests
+          Тести
         </h1>
 
         {/* Tabs */}
@@ -163,14 +163,14 @@ export default function TestsPage() {
             className={activeTab === "saved" ? "bg-blue-500" : "bg-gray-500/20"}
           >
             <FileText className="w-4 h-4 mr-2" />
-            My Saved Tests ({savedTests.length})
+            Мої збережені тести ({savedTests.length})
           </ButtonEnhanced>
           <ButtonEnhanced
             onClick={() => setActiveTab("create")}
             className={activeTab === "create" ? "bg-blue-500" : "bg-gray-500/20"}
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            Create New Test
+            Створити новий тест
           </ButtonEnhanced>
         </div>
 
@@ -179,7 +179,7 @@ export default function TestsPage() {
           <>
             <div className="mb-6 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
               <p className="text-sm text-muted-foreground">
-                All your generated tests are automatically saved here. They are private by default.
+                Всі ваші згенеровані тести автоматично зберігаються тут. Вони приватні за замовчуванням.
               </p>
             </div>
 
@@ -188,8 +188,8 @@ export default function TestsPage() {
             ) : savedTests.length === 0 ? (
               <EmptyState
                 icon="📚"
-                title="No saved tests yet"
-                description="Create a test from the 'Create New Test' tab and it will be automatically saved here!"
+                title="Немає збережених тестів"
+                description="Створіть тест у вкладці 'Створити новий тест', і він автоматично збережеться тут!"
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,7 +210,7 @@ export default function TestsPage() {
                             </p>
                           )}
                           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{test.questions_count} questions</span>
+                            <span>{test.questions_count} питань</span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {new Date(test.created_at).toLocaleDateString()}
@@ -237,7 +237,7 @@ export default function TestsPage() {
                           className="flex-1"
                           glow
                         >
-                          View Test
+                          Переглянути тест
                         </ButtonEnhanced>
                         <ButtonEnhanced
                           onClick={() => handleDeleteTest(test.id)}
@@ -259,7 +259,7 @@ export default function TestsPage() {
           <>
             <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
               <p className="text-sm text-muted-foreground">
-                Select a lesson to create and take a test. Tests are automatically saved to your profile!
+                Виберіть урок, щоб створити та пройти тест. Тести автоматично зберігаються у вашому профілі!
               </p>
             </div>
 
@@ -268,8 +268,8 @@ export default function TestsPage() {
             ) : lessons.length === 0 ? (
               <EmptyState
                 icon="📝"
-                title="No lessons to test"
-                description="Complete some lessons first, then you can create tests to reinforce your knowledge!"
+                title="Немає уроків для тестування"
+                description="Спочатку завершіть кілька уроків, потім ви зможете створювати тести для закріплення знань!"
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -284,7 +284,7 @@ export default function TestsPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-2">{lesson.title}</h3>
-                          <p className="text-xs text-muted-foreground">Test your knowledge</p>
+                          <p className="text-xs text-muted-foreground">Перевірте свої знання</p>
                         </div>
                         <BookOpen className="w-5 h-5 text-blue-500 flex-shrink-0 ml-2" />
                       </div>
@@ -305,7 +305,7 @@ export default function TestsPage() {
                           className="w-full"
                           glow
                         >
-                          {creatingTest === lesson.id ? "Creating Test..." : "Create & Start Test"}
+                          {creatingTest === lesson.id ? "Створення тесту..." : "Створити та розпочати тест"}
                         </ButtonEnhanced>
                       </motion.div>
                     </GlassCard>
