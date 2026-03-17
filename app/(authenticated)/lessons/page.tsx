@@ -201,6 +201,7 @@ export default function LessonsPage() {
   }, [filteredAndSortedLessons, currentPage])
 
   // Fetch user profile and auto-set grade filter
+  // This runs every time you navigate to the lessons page
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -208,7 +209,8 @@ export default function LessonsPage() {
         if (profile && profile.grade) {
           const gradeStr = profile.grade.toString()
           setUserGrade(gradeStr)
-          // Auto-set grade filter to user's grade
+
+          // Auto-set grade filter to user's grade when page loads
           setGradeFilter(gradeStr)
           setIsAutoFiltered(true)
         }
@@ -219,7 +221,7 @@ export default function LessonsPage() {
     }
 
     fetchUserProfile()
-  }, [])
+  }, []) // Empty deps = runs on mount (every time you navigate here)
 
   // Reset to page 1 when filters change
   useEffect(() => {
