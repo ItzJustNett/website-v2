@@ -144,28 +144,11 @@ export default function LessonDetailPage() {
         method: "GET",
       })
 
-      // Check if running in Tauri
-      if (typeof window !== "undefined" && (window as any).__TAURI__) {
-        const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow")
-        try {
-          new WebviewWindow("test", {
-            url: "/test?data=" + encodeURIComponent(JSON.stringify(testData)),
-            width: 1200,
-            height: 800,
-            minWidth: 600,
-            minHeight: 500,
-          })
-        } catch (e) {
-          console.error("Window already exists:", e)
-        }
-        showSuccess("Test opened in new window")
-      } else {
-        // Fallback to inline display for web version
-        setTest(testData)
-        setTestAnswers({})
-        setShowTestResults(false)
-        showSuccess("Test created! Scroll down to view the test.")
-      }
+      // Display test inline
+      setTest(testData)
+      setTestAnswers({})
+      setShowTestResults(false)
+      showSuccess("Test created! Scroll down to view the test.")
     } catch (err) {
       console.error("Error creating test:", err)
       showError("Failed to create test")

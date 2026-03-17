@@ -30,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${cormorant.variable} ${inter.variable}`}>
+      <head>
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="74ebfa80-79a2-42c6-99b9-00b4c7457bf6"></script>
+      </head>
       <body className="bg-background text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>
