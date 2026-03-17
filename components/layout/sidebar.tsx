@@ -15,9 +15,8 @@ import {
 const navItems = [
   { href: "/dashboard", label: "Головна", icon: Home },
   { href: "/lessons", label: "Уроки", icon: BookOpen },
-  { href: "/tests", label: "Тести", icon: Zap },
-  { href: "/store", label: "Магазин", icon: ShoppingBag },
   { href: "/ai-features", label: "AI Функції", icon: Brain },
+  { href: "/store", label: "Магазин", icon: ShoppingBag },
   { href: "/profile", label: "Профіль", icon: User },
   { href: "/settings", label: "Налаштування", icon: Settings },
 ]

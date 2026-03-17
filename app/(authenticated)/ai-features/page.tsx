@@ -1,19 +1,162 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { motion } from "framer-motion"
-import { Brain, Volume2, Lightbulb } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Brain, Zap, BookOpen, Clock, Trash2, Star, FileText } from "lucide-react"
+import { fetchWithAuth } from "@/lib/api"
+import { useNotification } from "@/contexts/notification-context"
+import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
+import { EmptyState } from "@/components/immersive/empty-state"
+
+interface SavedTest {
+  id: number
+  lesson_id: number | null
+  lesson_title: string | null
+  title: string
+  questions_count: number
+  is_private: boolean
+  is_favorite: boolean
+  created_at: string
+}
+
+interface SavedSummary {
+  id: number
+  lesson_id: number | null
+  lesson_title: string | null
+  title: string
+  summary: string
+  key_points: string[]
+  is_favorite: boolean
+  created_at: string
+}
 
 export default function AIFeaturesPage() {
-  const [isProcessing, setIsProcessing] = useState(false)
+  const router = useRouter()
+  const [savedTests, setSavedTests] = useState<SavedTest[]>([])
+  const [savedSummaries, setSavedSummaries] = useState<SavedSummary[]>([])
+  const [activeTab, setActiveTab] = useState<"tests" | "summaries">("tests")
+  const [isTestsLoading, setIsTestsLoading] = useState(true)
+  const [isSummariesLoading, setIsSummariesLoading] = useState(true)
+  const { error: showError, success: showSuccess } = useNotification()
 
-  const handleProcess = () => {
-    setIsProcessing(true)
-    setTimeout(() => setIsProcessing(false), 2000)
+  useEffect(() => {
+    const fetchSavedTests = async () => {
+      try {
+        setIsTestsLoading(true)
+        const data = await fetchWithAuth("/saved-tests")
+        setSavedTests(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error("Error fetching saved tests:", err)
+        showError("Не вдалося завантажити збережені тести")
+        setSavedTests([])
+      } finally {
+        setIsTestsLoading(false)
+      }
+    }
+
+    fetchSavedTests()
+  }, [showError])
+
+  useEffect(() => {
+    const fetchSavedSummaries = async () => {
+      try {
+        setIsSummariesLoading(true)
+        const data = await fetchWithAuth("/saved-summaries")
+        setSavedSummaries(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error("Error fetching saved summaries:", err)
+        showError("Не вдалося завантажити збережені конспекти")
+        setSavedSummaries([])
+      } finally {
+        setIsSummariesLoading(false)
+      }
+    }
+
+    fetchSavedSummaries()
+  }, [showError])
+
+  const handleDeleteTest = async (testId: number) => {
+    if (!confirm("Ви впевнені, що хочете видалити цей тест?")) return
+
+    try {
+      await fetchWithAuth(`/saved-tests/${testId}`, {
+        method: "DELETE",
+      })
+      showSuccess("Тест успішно видалено")
+      setSavedTests(savedTests.filter((test) => test.id !== testId))
+    } catch (err) {
+      console.error("Error deleting test:", err)
+      showError("Не вдалося видалити тест")
+    }
+  }
+
+  const handleDeleteSummary = async (summaryId: number) => {
+    if (!confirm("Ви впевнені, що хочете видалити цей конспект?")) return
+
+    try {
+      await fetchWithAuth(`/saved-summaries/${summaryId}`, {
+        method: "DELETE",
+      })
+      showSuccess("Конспект успішно видалено")
+      setSavedSummaries(savedSummaries.filter((summary) => summary.id !== summaryId))
+    } catch (err) {
+      console.error("Error deleting summary:", err)
+      showError("Не вдалося видалити конспект")
+    }
+  }
+
+  const handleToggleTestFavorite = async (testId: number) => {
+    try {
+      const response = await fetchWithAuth(`/saved-tests/${testId}/favorite`, {
+        method: "PUT",
+      })
+      showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
+      setSavedTests(
+        savedTests.map((test) =>
+          test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
+        )
+      )
+    } catch (err) {
+      console.error("Error toggling favorite:", err)
+      showError("Не вдалося оновити обране")
+    }
+  }
+
+  const handleToggleSummaryFavorite = async (summaryId: number) => {
+    try {
+      const response = await fetchWithAuth(`/saved-summaries/${summaryId}/favorite`, {
+        method: "PUT",
+      })
+      showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
+      setSavedSummaries(
+        savedSummaries.map((summary) =>
+          summary.id === summaryId ? { ...summary, is_favorite: response.is_favorite } : summary
+        )
+      )
+    } catch (err) {
+      console.error("Error toggling favorite:", err)
+      showError("Не вдалося оновити обране")
+    }
+  }
+
+  const handleViewTest = async (testId: number, lessonId: number | null) => {
+    if (lessonId) {
+      router.push(`/lessons/${lessonId}?testId=${testId}`)
+    } else {
+      showError("Неможливо переглянути тест: урок не знайдено")
+    }
+  }
+
+  const handleViewSummary = async (summaryId: number, lessonId: number | null) => {
+    if (lessonId) {
+      router.push(`/lessons/${lessonId}?summaryId=${summaryId}`)
+    } else {
+      showError("Неможливо переглянути конспект: урок не знайдено")
+    }
   }
 
   return (
@@ -25,94 +168,186 @@ export default function AIFeaturesPage() {
       >
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <Brain className="w-8 h-8" />
-          AI функції
+          AI Функції
         </h1>
 
-        <Tabs defaultValue="tts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="tts">Озвучування тексту</TabsTrigger>
-            <TabsTrigger value="summary">Конспекти</TabsTrigger>
-            <TabsTrigger value="tools">AI інструменти</TabsTrigger>
-          </TabsList>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <ButtonEnhanced
+            onClick={() => setActiveTab("tests")}
+            className={activeTab === "tests" ? "bg-blue-500" : "bg-gray-500/20"}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            Збережені тести ({savedTests.length})
+          </ButtonEnhanced>
+          <ButtonEnhanced
+            onClick={() => setActiveTab("summaries")}
+            className={activeTab === "summaries" ? "bg-purple-500" : "bg-gray-500/20"}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Збережені конспекти ({savedSummaries.length})
+          </ButtonEnhanced>
+        </div>
 
-          {/* Text-to-Speech */}
-          <TabsContent value="tts">
-            <GlassCard>
-              <div className="flex items-center gap-3 mb-4">
-                <Volume2 className="w-6 h-6 text-blue-500" />
-                <h2 className="text-2xl font-bold">Озвучування тексту</h2>
-              </div>
-              <p className="text-muted-foreground mb-6">
-                Слухайте уроки з озвученням від штучного інтелекту
+        {/* Saved Tests Tab */}
+        {activeTab === "tests" && (
+          <>
+            <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <p className="text-sm text-muted-foreground">
+                Всі ваші згенеровані тести автоматично зберігаються тут. Створюйте тести на сторінках уроків.
               </p>
-              <motion.div
-                animate={isProcessing ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 0.6 }}
-              >
-                <ButtonEnhanced
-                  onClick={handleProcess}
-                  disabled={isProcessing}
-                  className="w-full"
-                  glow
-                >
-                  {isProcessing ? "Відтворення..." : "Відтворити аудіо уроку"}
-                </ButtonEnhanced>
-              </motion.div>
-            </GlassCard>
-          </TabsContent>
+            </div>
 
-          {/* Summaries */}
-          <TabsContent value="summary">
-            <GlassCard>
-              <div className="flex items-center gap-3 mb-4">
-                <Lightbulb className="w-6 h-6 text-yellow-500" />
-                <h2 className="text-2xl font-bold">Миттєві конспекти</h2>
-              </div>
-              <p className="text-muted-foreground mb-6">
-                Отримуйте конспекти уроків, створені штучним інтелектом
-              </p>
-              <motion.div
-                animate={isProcessing ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 0.6 }}
-              >
-                <ButtonEnhanced
-                  onClick={handleProcess}
-                  disabled={isProcessing}
-                  className="w-full"
-                  glow
-                >
-                  {isProcessing ? "Генерація..." : "Згенерувати конспект"}
-                </ButtonEnhanced>
-              </motion.div>
-            </GlassCard>
-          </TabsContent>
+            {isTestsLoading ? (
+              <SkeletonLoader type="card" count={3} />
+            ) : savedTests.length === 0 ? (
+              <EmptyState
+                icon="📚"
+                title="Немає збережених тестів"
+                description="Перейдіть на сторінку уроку і створіть тест - він автоматично збережеться тут!"
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {savedTests.map((test, index) => (
+                  <motion.div
+                    key={test.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <GlassCard>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{test.title}</h3>
+                          {test.lesson_title && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {test.lesson_title}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{test.questions_count} питань</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(test.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleToggleTestFavorite(test.id)}
+                          className="flex-shrink-0 ml-2"
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              test.is_favorite
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </button>
+                      </div>
 
-          {/* Tools */}
-          <TabsContent value="tools">
-            <GlassCard>
-              <div className="flex items-center gap-3 mb-4">
-                <Brain className="w-6 h-6 text-purple-500" />
-                <h2 className="text-2xl font-bold">AI асистент</h2>
+                      <div className="flex gap-2">
+                        <ButtonEnhanced
+                          onClick={() => handleViewTest(test.id, test.lesson_id)}
+                          className="flex-1"
+                          glow
+                        >
+                          Переглянути тест
+                        </ButtonEnhanced>
+                        <ButtonEnhanced
+                          onClick={() => handleDeleteTest(test.id)}
+                          className="bg-red-500/20 hover:bg-red-500/30"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </ButtonEnhanced>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
+                ))}
               </div>
-              <p className="text-muted-foreground mb-6">
-                Отримуйте миттєві відповіді та пояснення від нашого AI репетитора
+            )}
+          </>
+        )}
+
+        {/* Saved Summaries Tab */}
+        {activeTab === "summaries" && (
+          <>
+            <div className="mb-6 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+              <p className="text-sm text-muted-foreground">
+                Всі ваші згенеровані конспекти автоматично зберігаються тут. Створюйте конспекти на сторінках уроків.
               </p>
-              <motion.div
-                animate={isProcessing ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 0.6 }}
-              >
-                <ButtonEnhanced
-                  onClick={handleProcess}
-                  disabled={isProcessing}
-                  className="w-full"
-                  glow
-                >
-                  {isProcessing ? "Думаю..." : "Запитати AI асистента"}
-                </ButtonEnhanced>
-              </motion.div>
-            </GlassCard>
-          </TabsContent>
-        </Tabs>
+            </div>
+
+            {isSummariesLoading ? (
+              <SkeletonLoader type="card" count={3} />
+            ) : savedSummaries.length === 0 ? (
+              <EmptyState
+                icon="📝"
+                title="Немає збережених конспектів"
+                description="Перейдіть на сторінку уроку і згенеруйте конспект - він автоматично збережеться тут!"
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {savedSummaries.map((summary, index) => (
+                  <motion.div
+                    key={summary.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <GlassCard>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{summary.title}</h3>
+                          {summary.lesson_title && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {summary.lesson_title}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{summary.key_points?.length || 0} ключових моментів</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(summary.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleToggleSummaryFavorite(summary.id)}
+                          className="flex-shrink-0 ml-2"
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              summary.is_favorite
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <ButtonEnhanced
+                          onClick={() => handleViewSummary(summary.id, summary.lesson_id)}
+                          className="flex-1"
+                          glow
+                        >
+                          Переглянути конспект
+                        </ButtonEnhanced>
+                        <ButtonEnhanced
+                          onClick={() => handleDeleteSummary(summary.id)}
+                          className="bg-red-500/20 hover:bg-red-500/30"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </ButtonEnhanced>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </motion.div>
     </PageTransition>
   )
