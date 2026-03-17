@@ -50,7 +50,8 @@ export default function SetupPage() {
       router.push("/lessons")
     } catch (err) {
       console.error("Setup error:", err)
-      showError("Не вдалося завершити налаштування")
+      const errorMessage = err instanceof Error ? err.message : "Не вдалося завершити налаштування"
+      showError(errorMessage)
     } finally {
       setIsLoading(false)
     }

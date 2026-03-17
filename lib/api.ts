@@ -34,7 +34,10 @@ export async function fetchWithAuth(
       }
     }
 
-    throw new Error(`API Error: ${response.statusText}`)
+    // Try to get detailed error message from response
+    const errorData = await response.json().catch(() => null)
+    const errorMessage = errorData?.detail || errorData?.message || response.statusText
+    throw new Error(`API Error: ${errorMessage}`)
   }
 
   return response.json()
