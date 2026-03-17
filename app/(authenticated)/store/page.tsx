@@ -181,7 +181,7 @@ export default function StorePage() {
             {Array.isArray(items) && items.map((item, index) => {
               const owned = isOwned(item.item_id)
               const equipped = isEquipped(item.item_id)
-              const canAfford = profile && profile.meowcoins >= item.price
+              const canAfford = !!(profile && profile.meowcoins >= item.price)
 
               return (
                 <motion.div
