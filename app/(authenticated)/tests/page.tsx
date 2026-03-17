@@ -21,6 +21,7 @@ interface Lesson {
 interface SavedTest {
   id: number
   lesson_id: number | null
+  lesson_string_id: string | null  // The actual lesson identifier
   lesson_title: string | null
   title: string
   questions_count: number
@@ -136,9 +137,9 @@ export default function TestsPage() {
     }
   }
 
-  const handleViewTest = async (testId: number, lessonId: number | null) => {
-    if (lessonId) {
-      router.push(`/lessons/${lessonId}?testId=${testId}`)
+  const handleViewTest = async (test: SavedTest) => {
+    if (test.lesson_string_id) {
+      router.push(`/lessons/${test.lesson_string_id}?testId=${test.id}`)
     } else {
       showError("Неможливо переглянути тест: урок не знайдено")
     }
@@ -233,7 +234,7 @@ export default function TestsPage() {
 
                       <div className="flex gap-2">
                         <ButtonEnhanced
-                          onClick={() => handleViewTest(test.id, test.lesson_id)}
+                          onClick={() => handleViewTest(test)}
                           className="flex-1"
                           glow
                         >
