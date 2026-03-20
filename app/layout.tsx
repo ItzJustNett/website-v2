@@ -21,6 +21,22 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  metadataBase: new URL('https://api.xoperr.dev'),
+  keywords: ['learning platform', 'education', 'online learning', 'Ukrainian education'],
+  authors: [{ name: 'PureMind Team' }],
+  openGraph: {
+    title: 'PureMind - Editorial Learning Platform',
+    description: 'Minimalist learning platform with curated content and focused design',
+    url: 'https://api.xoperr.dev',
+    siteName: 'PureMind',
+    locale: 'uk_UA',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PureMind - Editorial Learning Platform',
+    description: 'Minimalist learning platform with curated content and focused design',
+  },
 }
 
 export default function RootLayout({

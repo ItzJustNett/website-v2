@@ -14,10 +14,10 @@ export function CatMascot({ size = "md", state = "idle" }: CatMascotProps) {
     lg: "w-48 h-48 text-8xl",
   }
 
-  const stateEmojis = {
-    idle: "😸",
-    happy: "😸",
-    thinking: "🤔",
+  const stateImages = {
+    idle: "/orange.png",
+    happy: "/orange.png",
+    thinking: "/gray.png",
   }
 
   const breatheVariants = {
@@ -45,7 +45,7 @@ export function CatMascot({ size = "md", state = "idle" }: CatMascotProps) {
         }}
         className="select-none"
       >
-        {stateEmojis[state]}
+        <img src={stateImages[state]} alt="Cat mascot" className="w-full h-full object-contain" />
       </motion.div>
     </motion.div>
   )

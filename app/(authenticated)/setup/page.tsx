@@ -12,9 +12,8 @@ import { useNotification } from "@/contexts/notification-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
 const CATS = [
-  { id: 0, name: "Рудий кіт", emoji: "🐱", color: "from-orange-500/20 to-orange-600/10" },
-  { id: 1, name: "Сірий кіт", emoji: "😺", color: "from-gray-500/20 to-gray-600/10" },
-  { id: 2, name: "Чорний кіт", emoji: "😸", color: "from-purple-500/20 to-purple-600/10" }
+  { id: 0, name: "Рудий кіт", image: "/orange.png", color: "from-orange-500/20 to-orange-600/10" },
+  { id: 1, name: "Сірий кіт", image: "/gray.png", color: "from-gray-500/20 to-gray-600/10" }
 ]
 
 export default function SetupPage() {
@@ -124,7 +123,7 @@ export default function SetupPage() {
                         : "border-border hover:border-foreground/30"
                     }`}
                   >
-                    <div className="text-5xl mb-2">{cat.emoji}</div>
+                    <img src={cat.image} alt={cat.name} className="w-20 h-20 object-contain mx-auto mb-2" />
                     <div className="text-sm font-bold">{cat.name}</div>
                   </motion.button>
                 ))}
