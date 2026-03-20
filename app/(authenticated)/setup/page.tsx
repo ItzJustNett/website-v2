@@ -13,7 +13,8 @@ import { useNotification } from "@/contexts/notification-context"
 const GRADES = [6, 7, 8, 9, 10, 11]
 const CATS = [
   { id: 0, name: "Рудий кіт", image: "/orange.png", color: "from-orange-500/20 to-orange-600/10" },
-  { id: 1, name: "Сірий кіт", image: "/gray.png", color: "from-gray-500/20 to-gray-600/10" }
+  { id: 1, name: "Сірий кіт", image: "/gray.png", color: "from-gray-500/20 to-gray-600/10" },
+  { id: 2, name: "Чорний кіт", image: "/black.png", color: "from-purple-500/20 to-purple-600/10" }
 ]
 
 export default function SetupPage() {

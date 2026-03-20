@@ -25,7 +25,8 @@ const navItems = [
 
 const CAT_IMAGES = {
   0: "/orange.png",
-  1: "/gray.png"
+  1: "/gray.png",
+  2: "/black.png"
 }
 
 export function Sidebar() {
@@ -85,7 +86,7 @@ export function Sidebar() {
               <img
                 src={CAT_IMAGES[catId as keyof typeof CAT_IMAGES]}
                 alt="Your cat"
-                className="w-16 h-16 object-contain"
+                className="w-48 h-48 object-contain"
               />
             </div>
           )}
