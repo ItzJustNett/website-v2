@@ -45,19 +45,11 @@ export default function TestsPage() {
       try {
         setIsLoading(true)
         const data = await fetchWithAuth("/lessons")
-
-        // Handle different response formats
-        let lessonsData: Lesson[] = []
-        if (Array.isArray(data)) {
-          lessonsData = data
-        } else if (data && typeof data === "object") {
-          // Try common response wrapper formats
-          lessonsData = data.lessons || data.data || data.items || []
-        }
-
-        setLessons(lessonsData)
-      } catch (err) {
-        console.error("Error fetching lessons:", err)
+        const lessons = Array.isArray(data)
+          ? data
+          : (data?.lessons || data?.data || data?.items || [])
+        setLessons(lessons)
+      } catch {
         showError("Не вдалося завантажити уроки")
         setLessons([])
       } finally {
@@ -74,8 +66,7 @@ export default function TestsPage() {
         setIsSavedTestsLoading(true)
         const data = await fetchWithAuth("/saved-tests")
         setSavedTests(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error("Error fetching saved tests:", err)
+      } catch {
         showError("Не вдалося завантажити збережені тести")
         setSavedTests([])
       } finally {
@@ -98,8 +89,7 @@ export default function TestsPage() {
       setSavedTests(Array.isArray(data) ? data : [])
       // Navigate to the lesson detail page to view the test
       router.push(`/lessons/${lessonId}`)
-    } catch (err) {
-      console.error("Error creating test:", err)
+    } catch {
       showError("Не вдалося створити тест")
       setCreatingTest(null)
     }
@@ -114,8 +104,7 @@ export default function TestsPage() {
       })
       showSuccess("Тест успішно видалено")
       setSavedTests(savedTests.filter((test) => test.id !== testId))
-    } catch (err) {
-      console.error("Error deleting test:", err)
+    } catch {
       showError("Не вдалося видалити тест")
     }
   }
@@ -131,8 +120,7 @@ export default function TestsPage() {
           test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
         )
       )
-    } catch (err) {
-      console.error("Error toggling favorite:", err)
+    } catch {
       showError("Не вдалося оновити обране")
     }
   }
@@ -157,7 +145,6 @@ export default function TestsPage() {
           Тести
         </h1>
 
-        {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <ButtonEnhanced
             onClick={() => setActiveTab("saved")}
@@ -175,7 +162,6 @@ export default function TestsPage() {
           </ButtonEnhanced>
         </div>
 
-        {/* Saved Tests Tab */}
         {activeTab === "saved" && (
           <>
             <div className="mb-6 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
@@ -255,7 +241,6 @@ export default function TestsPage() {
           </>
         )}
 
-        {/* Create Test Tab */}
         {activeTab === "create" && (
           <>
             <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">

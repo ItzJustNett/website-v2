@@ -8,7 +8,7 @@ interface User {
   username: string
 }
 
-interface AuthContextType {
+interface AuthContextValue {
   user: User | null
   isLoading: boolean
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>
@@ -16,7 +16,7 @@ interface AuthContextType {
   logout: () => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -24,7 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is logged in
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token")
       const username = localStorage.getItem("username")
@@ -40,64 +39,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await fetch("https://api.xoperr.dev/api/auth/login", {
+      const res = await fetch("https://api.xoperr.dev/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Login failed:", errorText)
+      if (!res.ok) {
         return { success: false, error: "Login failed. Please check your credentials." }
       }
 
-      try {
-        const data = await response.json()
+      const data = await res.json()
+      localStorage.setItem("token", data.token)
+      localStorage.setItem("username", username)
+      localStorage.setItem("user_id", data.user_id)
 
-        localStorage.setItem("token", data.token)
-        localStorage.setItem("username", username)
-        localStorage.setItem("user_id", data.user_id)
-
-        setUser({ id: data.user_id, username })
-        return { success: true }
-      } catch (parseError) {
-        console.error("Error parsing login response:", parseError)
-        return { success: false, error: "Invalid response from server" }
-      }
+      setUser({ id: data.user_id, username })
+      return { success: true }
     } catch (error) {
-      console.error("Login error:", error)
       return { success: false, error: "Network error. Please try again." }
     }
   }
 
   const register = async (username: string, password: string, email: string) => {
     try {
-      const response = await fetch("https://api.xoperr.dev/api/auth/register", {
+      const res = await fetch("https://api.xoperr.dev/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, email }),
       })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Registration failed:", errorText)
+      if (!res.ok) {
         return { success: false, error: "Registration failed. Please try again." }
       }
 
-      try {
-        const data = await response.json()
-        return { success: true, user_id: data.user_id }
-      } catch (parseError) {
-        console.error("Error parsing registration response:", parseError)
-        return { success: false, error: "Invalid response from server" }
-      }
-    } catch (error) {
-      console.error("Registration error:", error)
+      const data = await res.json()
+      return { success: true, user_id: data.user_id }
+    } catch {
       return { success: false, error: "Network error. Please try again." }
     }
   }
@@ -105,7 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token")
-
       if (token) {
         fetch("https://api.xoperr.dev/api/auth/logout", {
           method: "POST",
@@ -113,15 +90,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }).catch((error) => console.error("Logout error:", error))
+        }).catch(() => {})
       }
 
       localStorage.removeItem("token")
       localStorage.removeItem("username")
       localStorage.removeItem("user_id")
-
       setUser(null)
-
       router.push("/login")
     }
   }

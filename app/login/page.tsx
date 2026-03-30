@@ -85,7 +85,6 @@ export default function LoginPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        {/* Logo and title */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-serif font-bold mb-3">PureMind</h1>
           <p className="text-lg text-muted-foreground font-sans">
@@ -93,7 +92,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Auth forms */}
         <EditorialCard>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-white dark:bg-black border border-black dark:border-white rounded-sm">
@@ -105,7 +103,6 @@ export default function LoginPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Login form */}
             <TabsContent value="login" className="space-y-5">
               <form onSubmit={handleLogin} className="space-y-5">
                 <div>
@@ -156,7 +153,6 @@ export default function LoginPage() {
               <OAuthButtons />
             </TabsContent>
 
-            {/* Register form */}
             <TabsContent value="register" className="space-y-5">
               <form onSubmit={handleRegister} className="space-y-5">
                 <div>
@@ -245,7 +241,6 @@ export default function LoginPage() {
           </Tabs>
         </EditorialCard>
 
-        {/* Footer text */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

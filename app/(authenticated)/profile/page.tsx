@@ -32,28 +32,20 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const load = async () => {
       try {
         setIsLoading(true)
         const data = await fetchWithAuth("/profiles/me")
-
-        if (data && typeof data === "object") {
-          setProfile(data as UserProfile)
-        } else {
-          showError("Невірні дані профілю")
-        }
-      } catch (err) {
-        console.error("Error fetching profile:", err)
+        setProfile(data as UserProfile)
+      } catch {
         showError("Не вдалося завантажити профіль")
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (isLoading) {
-      fetchProfile()
-    }
-  }, [showError, isLoading])
+    load()
+  }, [showError])
 
   const achievements = [
     { name: "Перші кроки", icon: "👣", unlocked: profile && profile.lessons_completed > 0 },

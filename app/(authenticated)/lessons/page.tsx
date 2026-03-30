@@ -88,32 +88,27 @@ export default function LessonsPage() {
   const [isAutoFiltered, setIsAutoFiltered] = useState(false)
   const { error: showError } = useNotification()
 
-  // Extract grade from course_id or lesson ID (e.g., "biolohiya-10" -> "10")
   const extractGrade = (lesson: Lesson): string | null => {
     const courseId = lesson.course_id || lesson.id
     const match = courseId.match(/(\d+)$|(\d+)-klas/i)
     return match ? (match[1] || match[2]) : null
   }
 
-  // Extract subject from course_id (e.g., "biolohiya-i-ekolohiya-10" -> "biolohiya-i-ekolohiya")
   const extractSubject = (lesson: Lesson): string | null => {
     const courseId = lesson.course_id || ""
     const match = courseId.match(/^(.+)-(\d+)$/)
     return match ? match[1] : null
   }
 
-  // Get subject display name
   const getSubjectName = (subjectKey: string): string => {
     return SUBJECT_NAMES[subjectKey] || subjectKey
   }
 
-  // Get subject icon
   const getSubjectIcon = (lesson: Lesson): LucideIcon => {
     const subject = extractSubject(lesson)
     return subject ? (SUBJECT_ICONS[subject] || BookOpen) : BookOpen
   }
 
-  // Get unique grades from lessons
   const availableGrades = useMemo(() => {
     const grades = new Set<string>()
     lessons.forEach(lesson => {
@@ -123,7 +118,6 @@ export default function LessonsPage() {
     return Array.from(grades).sort((a, b) => parseInt(a) - parseInt(b))
   }, [lessons])
 
-  // Get unique subjects from lessons
   const availableSubjects = useMemo(() => {
     const subjects = new Set<string>()
     lessons.forEach(lesson => {
@@ -135,7 +129,6 @@ export default function LessonsPage() {
     )
   }, [lessons])
 
-  // Get unique difficulties from lessons
   const availableDifficulties = useMemo(() => {
     const difficulties = new Set<string>()
     lessons.forEach(lesson => {
@@ -144,17 +137,14 @@ export default function LessonsPage() {
     return Array.from(difficulties)
   }, [lessons])
 
-  // Filtered and sorted lessons
   const filteredAndSortedLessons = useMemo(() => {
     let filtered = [...lessons]
 
-    // Auto-hide private videos
     filtered = filtered.filter(lesson =>
       !lesson.title?.toLowerCase().includes("[private video]") &&
       !lesson.title?.toLowerCase().includes("private video")
     )
 
-    // Filter by grade
     if (gradeFilter !== "all") {
       filtered = filtered.filter(lesson => {
         const grade = extractGrade(lesson)
@@ -162,7 +152,6 @@ export default function LessonsPage() {
       })
     }
 
-    // Filter by subject
     if (subjectFilter !== "all") {
       filtered = filtered.filter(lesson => {
         const subject = extractSubject(lesson)
@@ -170,12 +159,10 @@ export default function LessonsPage() {
       })
     }
 
-    // Filter by difficulty
     if (difficultyFilter !== "all") {
       filtered = filtered.filter(lesson => lesson.difficulty === difficultyFilter)
     }
 
-    // Sort lessons
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "title":
@@ -183,7 +170,7 @@ export default function LessonsPage() {
         case "xp":
           return (b.xp_reward || 0) - (a.xp_reward || 0)
         case "recent":
-          return 0 // Keep original order (most recent first from API)
+          return 0
         default:
           return 0
       }
@@ -192,7 +179,6 @@ export default function LessonsPage() {
     return filtered
   }, [lessons, sortBy, gradeFilter, subjectFilter, difficultyFilter])
 
-  // Paginated lessons
   const totalPages = Math.ceil(filteredAndSortedLessons.length / LESSONS_PER_PAGE)
   const paginatedLessons = useMemo(() => {
     const startIndex = (currentPage - 1) * LESSONS_PER_PAGE
@@ -200,8 +186,6 @@ export default function LessonsPage() {
     return filteredAndSortedLessons.slice(startIndex, endIndex)
   }, [filteredAndSortedLessons, currentPage])
 
-  // Fetch user profile and auto-set grade filter
-  // This runs every time you navigate to the lessons page
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -210,49 +194,35 @@ export default function LessonsPage() {
           const gradeStr = profile.grade.toString()
           setUserGrade(gradeStr)
 
-          // Auto-set grade filter to user's grade when page loads
           setGradeFilter(gradeStr)
           setIsAutoFiltered(true)
         }
-      } catch (err) {
-        // If profile fetch fails, continue with "all" filter
-        console.log("Could not fetch user profile, using default filter")
+      } catch {}
       }
     }
 
     fetchUserProfile()
-  }, []) // Empty deps = runs on mount (every time you navigate here)
+  }, [])
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [gradeFilter, subjectFilter, difficultyFilter, sortBy, searchQuery])
 
-  // Debounced search
   useEffect(() => {
     const fetchLessons = async () => {
       try {
         setIsLoading(true)
 
-        // Use search endpoint if there's a query
         const endpoint = searchQuery.trim()
           ? `/lessons/search?q=${encodeURIComponent(searchQuery.trim())}`
           : "/lessons"
 
         const data = await fetchWithAuth(endpoint)
-
-        // Handle different response formats
-        let lessonsData = []
-        if (Array.isArray(data)) {
-          lessonsData = data
-        } else if (data && typeof data === "object") {
-          // Try common response wrapper formats
-          lessonsData = data.lessons || data.results || data.data || data.items || []
-        }
-
-        setLessons(lessonsData)
-      } catch (err) {
-        console.error("Error fetching lessons:", err)
+        const lessons = Array.isArray(data)
+          ? data
+          : (data?.lessons || data?.results || data?.data || data?.items || [])
+        setLessons(lessons)
+      } catch {
         showError("Не вдалося завантажити уроки")
         setLessons([])
       } finally {
@@ -260,7 +230,6 @@ export default function LessonsPage() {
       }
     }
 
-    // Debounce search requests
     const timeoutId = setTimeout(() => {
       fetchLessons()
     }, 300)
@@ -299,7 +268,6 @@ export default function LessonsPage() {
           )}
         </div>
 
-        {/* Search Bar and View Toggle */}
         <div className="mb-6 flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -320,7 +288,6 @@ export default function LessonsPage() {
             )}
           </div>
 
-          {/* View Mode Toggle */}
           <div className="flex gap-1 bg-background/50 border border-border rounded-lg p-1">
             <button
               onClick={() => setViewMode("cards")}
@@ -347,10 +314,9 @@ export default function LessonsPage() {
           </div>
         </div>
 
-        {/* Sorting and Filtering Controls */}
         {!isLoading && lessons.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-4">
-            {/* Sort By */}
+            
             <div className="flex items-center gap-2">
               <ArrowUpDown className="w-4 h-4" />
               <select
@@ -364,7 +330,7 @@ export default function LessonsPage() {
               </select>
             </div>
 
-            {/* Subject Filter */}
+            
             {availableSubjects.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -381,7 +347,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-            {/* Grade Filter */}
+            
             {availableGrades.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -398,7 +364,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-            {/* Difficulty Filter */}
+            
             {availableDifficulties.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -415,7 +381,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-            {/* Results count */}
+            
             <div className="flex items-center text-sm text-muted-foreground ml-auto">
               Показано {((currentPage - 1) * LESSONS_PER_PAGE) + 1}-{Math.min(currentPage * LESSONS_PER_PAGE, filteredAndSortedLessons.length)} з {filteredAndSortedLessons.length} уроків
             </div>
@@ -453,19 +419,19 @@ export default function LessonsPage() {
                       <Link href={`/lessons/${lesson.id}`}>
                         <GlassCard className="group hover:border-foreground/30 transition-all duration-200">
                           <div className="flex items-center gap-4">
-                            {/* Icon */}
+                            
                             <div className="flex-shrink-0">
                               <SubjectIcon className="w-6 h-6" />
                             </div>
 
-                            {/* Title */}
+                            
                             <div className="flex-1 min-w-0">
                               <h3 className="font-bold text-lg group-hover:underline decoration-2 underline-offset-4 truncate text-foreground">
                                 {lesson.title}
                               </h3>
                             </div>
 
-                            {/* Badges - Right aligned */}
+                            
                             <div className="flex items-center gap-4 flex-shrink-0">
                               {lesson.difficulty && (
                                 <span className="text-sm px-3 py-1.5 border-2 border-foreground/20 rounded font-bold">
@@ -503,7 +469,7 @@ export default function LessonsPage() {
                       <Link href={`/lessons/${lesson.id}`}>
                         <GlassCard className="group hover:border-foreground/30 transition-all duration-200 h-full">
                           <div className="flex flex-col h-full">
-                            {/* Header with icon */}
+                            
                             <div className="flex items-start gap-3 mb-4">
                               <div className="flex-shrink-0 p-2 rounded-lg bg-foreground/5">
                                 <SubjectIcon className="w-6 h-6" />
@@ -522,12 +488,12 @@ export default function LessonsPage() {
                               </div>
                             </div>
 
-                            {/* Title */}
+                            
                             <h3 className="font-bold text-base mb-3 line-clamp-2 group-hover:underline decoration-2 underline-offset-4 text-foreground flex-grow">
                               {lesson.title}
                             </h3>
 
-                            {/* Arrow indicator */}
+                            
                             <div className="flex justify-end">
                               <span className="text-foreground/60 group-hover:translate-x-1 transition-transform duration-200 font-bold text-xl">
                                 →
@@ -542,7 +508,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-            {/* Pagination Controls */}
+            
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <ButtonEnhanced

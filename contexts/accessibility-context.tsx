@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-interface AccessibilityContextType {
+interface AccessibilitySettings {
   fontSize: number
   highContrast: boolean
   readAloud: boolean
@@ -15,7 +15,7 @@ interface AccessibilityContextType {
   setReducedMotion: (value: boolean) => void
 }
 
-const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined)
+const AccessibilityContext = createContext<AccessibilitySettings | undefined>(undefined)
 
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSize] = useState(100)
@@ -24,7 +24,6 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [dyslexicFont, setDyslexicFont] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
 
-  // Load from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("accessibility")
@@ -37,15 +36,12 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
         setReducedMotion(settings.reducedMotion || false)
       }
 
-      // Check system preference for reduced motion
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      if (prefersReducedMotion) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         setReducedMotion(true)
       }
     }
   }, [])
 
-  // Save to localStorage whenever settings change
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("accessibility", JSON.stringify({
@@ -56,18 +52,9 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
         reducedMotion,
       }))
 
-      // Apply to document
       document.documentElement.style.fontSize = `${fontSize}%`
-      if (highContrast) {
-        document.documentElement.classList.add("high-contrast")
-      } else {
-        document.documentElement.classList.remove("high-contrast")
-      }
-      if (reducedMotion) {
-        document.documentElement.classList.add("reduce-motion")
-      } else {
-        document.documentElement.classList.remove("reduce-motion")
-      }
+      document.documentElement.classList.toggle("high-contrast", highContrast)
+      document.documentElement.classList.toggle("reduce-motion", reducedMotion)
     }
   }, [fontSize, highContrast, readAloud, dyslexicFont, reducedMotion])
 

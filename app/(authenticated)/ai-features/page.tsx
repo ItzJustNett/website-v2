@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/immersive/empty-state"
 interface SavedTest {
   id: number
   lesson_id: number | null
-  lesson_string_id: string | null  // The actual lesson identifier
+  lesson_string_id: string | null
   lesson_title: string | null
   title: string
   questions_count: number
@@ -27,7 +27,7 @@ interface SavedTest {
 interface SavedSummary {
   id: number
   lesson_id: number | null
-  lesson_string_id: string | null  // The actual lesson identifier
+  lesson_string_id: string | null
   lesson_title: string | null
   title: string
   summary: string
@@ -51,8 +51,7 @@ export default function AIFeaturesPage() {
         setIsTestsLoading(true)
         const data = await fetchWithAuth("/saved-tests")
         setSavedTests(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error("Error fetching saved tests:", err)
+      } catch {
         showError("Не вдалося завантажити збережені тести")
         setSavedTests([])
       } finally {
@@ -69,8 +68,7 @@ export default function AIFeaturesPage() {
         setIsSummariesLoading(true)
         const data = await fetchWithAuth("/saved-summaries")
         setSavedSummaries(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error("Error fetching saved summaries:", err)
+      } catch {
         showError("Не вдалося завантажити збережені конспекти")
         setSavedSummaries([])
       } finally {
@@ -90,8 +88,7 @@ export default function AIFeaturesPage() {
       })
       showSuccess("Тест успішно видалено")
       setSavedTests(savedTests.filter((test) => test.id !== testId))
-    } catch (err) {
-      console.error("Error deleting test:", err)
+    } catch {
       showError("Не вдалося видалити тест")
     }
   }
@@ -105,8 +102,7 @@ export default function AIFeaturesPage() {
       })
       showSuccess("Конспект успішно видалено")
       setSavedSummaries(savedSummaries.filter((summary) => summary.id !== summaryId))
-    } catch (err) {
-      console.error("Error deleting summary:", err)
+    } catch {
       showError("Не вдалося видалити конспект")
     }
   }
@@ -122,8 +118,7 @@ export default function AIFeaturesPage() {
           test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
         )
       )
-    } catch (err) {
-      console.error("Error toggling favorite:", err)
+    } catch {
       showError("Не вдалося оновити обране")
     }
   }
@@ -139,8 +134,7 @@ export default function AIFeaturesPage() {
           summary.id === summaryId ? { ...summary, is_favorite: response.is_favorite } : summary
         )
       )
-    } catch (err) {
-      console.error("Error toggling favorite:", err)
+    } catch {
       showError("Не вдалося оновити обране")
     }
   }
