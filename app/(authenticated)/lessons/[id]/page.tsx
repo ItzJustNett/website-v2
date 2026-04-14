@@ -164,6 +164,7 @@ export default function LessonDetailPage() {
   const handleCompleteLesson = async () => {
     try {
       setIsCompletingLesson(true)
+      alert(`Calling complete endpoint for lesson: ${lessonId}`)
       console.log('[Lesson] Marking lesson as complete:', lessonId)
 
       const result = await fetchWithAuth(`/lessons/${lessonId}/complete`, {
@@ -171,8 +172,10 @@ export default function LessonDetailPage() {
       })
 
       console.log('[Lesson] Complete response:', result)
+      alert(`Response: ${JSON.stringify(result)}`)
 
       if (result.success) {
+        alert(`SUCCESS! Lessons completed: ${result.lessons_completed}`)
         showSuccess(`Урок виконано! +${result.xp_earned} XP, +${result.meowcoins_earned} монет 🎉`)
         // Update lesson to show as completed
         setLesson((prev) => prev ? { ...prev, completed: true } : null)
@@ -185,7 +188,8 @@ export default function LessonDetailPage() {
       }
     } catch (err) {
       console.error("Error completing lesson:", err)
-      showError("Помилка при завершенні уроку")
+      alert(`ERROR: ${err}`)
+      showError(`Помилка: ${err}`)
     } finally {
       setIsCompletingLesson(false)
     }
