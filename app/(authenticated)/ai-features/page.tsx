@@ -7,7 +7,7 @@ import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { motion } from "framer-motion"
 import { Brain, Zap, BookOpen, Clock, Trash2, Star, FileText } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
@@ -49,7 +49,7 @@ export default function AIFeaturesPage() {
     const fetchSavedTests = async () => {
       try {
         setIsTestsLoading(true)
-        const data = await fetchWithAuth("/saved-tests")
+        const data = await api.get("/saved-tests")
         setSavedTests(Array.isArray(data) ? data : [])
       } catch {
         showError("Не вдалося завантажити збережені тести")
@@ -66,7 +66,7 @@ export default function AIFeaturesPage() {
     const fetchSavedSummaries = async () => {
       try {
         setIsSummariesLoading(true)
-        const data = await fetchWithAuth("/saved-summaries")
+        const data = await api.get("/saved-summaries")
         setSavedSummaries(Array.isArray(data) ? data : [])
       } catch {
         showError("Не вдалося завантажити збережені конспекти")

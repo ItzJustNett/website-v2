@@ -8,7 +8,7 @@ import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
 import { motion } from "framer-motion"
 import { Store, Coins, Package, Check } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 
 interface StoreItem {
@@ -100,7 +100,7 @@ export default function StorePage() {
 
     try {
       setBuyingItemId(itemId)
-      await fetchWithAuth("/store/buy", {
+      await api.get("/store/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item_id: itemId })
@@ -118,7 +118,7 @@ export default function StorePage() {
   const handleEquip = async (itemId: string) => {
     try {
       setEquippingItemId(itemId)
-      await fetchWithAuth("/inventory/equip", {
+      await api.get("/inventory/equip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item_id: itemId })
@@ -136,7 +136,7 @@ export default function StorePage() {
   const handleUnequip = async (itemId: string) => {
     try {
       setEquippingItemId(itemId)
-      await fetchWithAuth("/inventory/unequip", {
+      await api.get("/inventory/unequip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item_id: itemId })

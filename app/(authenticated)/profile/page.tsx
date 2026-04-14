@@ -9,7 +9,7 @@ import { EditorialStat } from "@/components/immersive/editorial-stat"
 import { motion } from "framer-motion"
 import { LogOut } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 
 interface UserProfile {
@@ -35,7 +35,7 @@ export default function ProfilePage() {
     const load = async () => {
       try {
         setIsLoading(true)
-        const data = await fetchWithAuth("/profiles/me")
+        const data = await api.get("/profiles/me")
         setProfile(data as UserProfile)
       } catch {
         showError("Не вдалося завантажити профіль")

@@ -7,7 +7,7 @@ import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { motion } from "framer-motion"
 import { Zap, BookOpen, Clock, Trash2, Star, FileText } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
@@ -44,7 +44,7 @@ export default function TestsPage() {
     const fetchLessons = async () => {
       try {
         setIsLoading(true)
-        const data = await fetchWithAuth("/lessons")
+        const data = await api.get("/lessons")
         const lessons = Array.isArray(data)
           ? data
           : (data?.lessons || data?.data || data?.items || [])
@@ -64,7 +64,7 @@ export default function TestsPage() {
     const fetchSavedTests = async () => {
       try {
         setIsSavedTestsLoading(true)
-        const data = await fetchWithAuth("/saved-tests")
+        const data = await api.get("/saved-tests")
         setSavedTests(Array.isArray(data) ? data : [])
       } catch {
         showError("Не вдалося завантажити збережені тести")
@@ -85,7 +85,7 @@ export default function TestsPage() {
       })
       showSuccess("Тест створено та збережено! Відкриття уроку...")
       // Refresh saved tests
-      const data = await fetchWithAuth("/saved-tests")
+      const data = await api.get("/saved-tests")
       setSavedTests(Array.isArray(data) ? data : [])
       // Navigate to the lesson detail page to view the test
       router.push(`/lessons/${lessonId}`)

@@ -13,7 +13,7 @@ import {
   Landmark, Flag, FlaskConical, BookText, Languages,
   Book, LayoutGrid, LayoutList, type LucideIcon
 } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import Link from "next/link"
 
@@ -189,7 +189,7 @@ export default function LessonsPage() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const profile = await fetchWithAuth("/profiles/me")
+        const profile = await api.get("/profiles/me")
         if (profile && profile.grade) {
           const gradeStr = profile.grade.toString()
           setUserGrade(gradeStr)

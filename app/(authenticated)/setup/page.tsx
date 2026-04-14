@@ -7,7 +7,7 @@ import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { motion } from "framer-motion"
 import { GraduationCap, Cat } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
@@ -37,7 +37,7 @@ export default function SetupPage() {
 
     try {
       setIsLoading(true)
-      await fetchWithAuth("/profiles/setup", {
+      await api.get("/profiles/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

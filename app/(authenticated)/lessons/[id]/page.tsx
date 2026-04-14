@@ -9,7 +9,7 @@ import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { ErrorState } from "@/components/immersive/error-state"
 import { motion } from "framer-motion"
 import { BookOpen, Play, Send, Zap, ChevronUp, ChevronDown } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 
 interface Message {
@@ -108,6 +108,7 @@ export default function LessonDetailPage() {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [videoCollapsed, setVideoCollapsed] = useState(false)
+  const [isCompletingLesson, setIsCompletingLesson] = useState(false)
   const { error: showError, success: showSuccess } = useNotification()
 
   const handleSendMessage = async () => {
@@ -157,6 +158,26 @@ export default function LessonDetailPage() {
     }
   }
 
+  const handleCompleteLesson = async () => {
+    try {
+      setIsCompletingLesson(true)
+      const result = await fetchWithAuth(`/lessons/${lessonId}/complete`, {
+        method: "POST",
+      })
+
+      if (result.success) {
+        showSuccess(`Урок виконано! +${result.xp_earned} XP, +${result.meowcoins_earned} монет 🎉`)
+        // Update lesson to show as completed
+        setLesson((prev) => prev ? { ...prev, completed: true } : null)
+      }
+    } catch (err) {
+      console.error("Error completing lesson:", err)
+      // Don't show error - lesson completion is a nice-to-have
+    } finally {
+      setIsCompletingLesson(false)
+    }
+  }
+
   const handleGenerateSummary = async () => {
     try {
       setIsGeneratingSummary(true)
@@ -166,6 +187,11 @@ export default function LessonDetailPage() {
 
       setSummary(summaryData)
       showSuccess("Конспект згенеровано! Прокрутіть вниз, щоб переглянути.")
+
+      // Mark lesson as complete when summary is generated
+      if (!lesson?.completed) {
+        await handleCompleteLesson()
+      }
     } catch (err) {
       console.error("Error generating summary:", err)
       showError("Не вдалося згенерувати конспект")
@@ -531,9 +557,11 @@ export default function LessonDetailPage() {
               glow
               className="flex flex-col items-center justify-center w-full h-14 p-1"
               title="Розпочати урок"
+              onClick={handleCompleteLesson}
+              disabled={isCompletingLesson || lesson?.completed}
             >
               <Play className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">Старт</span>
+              <span className="text-[9px]">{lesson?.completed ? "✓" : "Старт"}</span>
             </ButtonEnhanced>
 
             <ButtonEnhanced

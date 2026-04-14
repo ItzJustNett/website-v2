@@ -7,7 +7,7 @@ import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { motion } from "framer-motion"
 import { Settings, User, Mail, Lock, Cat, GraduationCap } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
@@ -35,7 +35,7 @@ export default function SettingsPage() {
     const fetchProfile = async () => {
       try {
         setIsLoading(true)
-        const data = await fetchWithAuth("/profiles/me")
+        const data = await api.get("/profiles/me")
         setProfile(data)
         setEmail(data.email || "")
         setUsername(data.username || "")
@@ -56,7 +56,7 @@ export default function SettingsPage() {
     if (!email) return
     try {
       setIsSaving(true)
-      await fetchWithAuth("/account/email", {
+      await api.get("/account/email", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
@@ -73,7 +73,7 @@ export default function SettingsPage() {
     if (!username) return
     try {
       setIsSaving(true)
-      await fetchWithAuth("/account/username", {
+      await api.get("/account/username", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username })
@@ -93,7 +93,7 @@ export default function SettingsPage() {
     }
     try {
       setIsSaving(true)
-      await fetchWithAuth("/account/password", {
+      await api.get("/account/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -118,7 +118,7 @@ export default function SettingsPage() {
     }
     try {
       setIsSaving(true)
-      await fetchWithAuth("/profiles", {
+      await api.get("/profiles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
