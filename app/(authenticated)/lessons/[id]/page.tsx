@@ -162,6 +162,7 @@ export default function LessonDetailPage() {
   }
 
   const handleCompleteLesson = async () => {
+    console.log('🚀 START BUTTON CLICKED!')
     try {
       setIsCompletingLesson(true)
       console.log('[Lesson] Marking lesson as complete:', lessonId)
