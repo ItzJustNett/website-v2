@@ -593,6 +593,12 @@ export default function LessonDetailPage() {
               <span className="text-[9px]">{lesson?.completed ? "✓" : "Старт"}</span>
             </ButtonEnhanced>
 
+            {!lesson?.completed && (
+              <div className="flex items-center justify-center w-full py-1 text-[10px] text-yellow-600 dark:text-yellow-400 font-medium">
+                +5 🪙
+              </div>
+            )}
+
             <ButtonEnhanced
               variant="outline"
               className="flex flex-col items-center justify-center w-full h-14 p-1"
