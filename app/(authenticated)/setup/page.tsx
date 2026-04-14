@@ -37,13 +37,9 @@ export default function SetupPage() {
 
     try {
       setIsLoading(true)
-      await api.get("/profiles/setup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          grade: selectedGrade,
-          cat_id: selectedCat
-        })
+      await api.post("/profiles/setup", {
+        grade: selectedGrade,
+        cat_id: selectedCat
       })
 
       showSuccess("Налаштування завершено!")

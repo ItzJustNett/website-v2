@@ -56,11 +56,7 @@ export default function SettingsPage() {
     if (!email) return
     try {
       setIsSaving(true)
-      await api.get("/account/email", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      })
+      await api.put("/account/email", { email })
       showSuccess("Електронну пошту оновлено")
     } catch (err) {
       showError("Не вдалося оновити електронну пошту")
@@ -73,11 +69,7 @@ export default function SettingsPage() {
     if (!username) return
     try {
       setIsSaving(true)
-      await api.get("/account/username", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username })
-      })
+      await api.put("/account/username", { username })
       showSuccess("Ім'я користувача оновлено")
     } catch (err) {
       showError("Не вдалося оновити ім'я користувача")
@@ -93,13 +85,9 @@ export default function SettingsPage() {
     }
     try {
       setIsSaving(true)
-      await api.get("/account/password", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword
-        })
+      await api.put("/account/password", {
+        current_password: currentPassword,
+        new_password: newPassword
       })
       showSuccess("Пароль оновлено")
       setCurrentPassword("")
@@ -118,14 +106,10 @@ export default function SettingsPage() {
     }
     try {
       setIsSaving(true)
-      await api.get("/profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: profile.name || username,
-          grade: selectedGrade,
-          cat_id: selectedCat
-        })
+      await api.post("/profiles", {
+        name: profile.name || username,
+        grade: selectedGrade,
+        cat_id: selectedCat
       })
       showSuccess("Профіль оновлено")
     } catch (err) {
