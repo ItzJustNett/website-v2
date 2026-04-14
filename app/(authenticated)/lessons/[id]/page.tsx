@@ -11,6 +11,7 @@ import { motion } from "framer-motion"
 import { BookOpen, Play, Send, Zap, ChevronUp, ChevronDown } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useProfile } from "@/contexts/profile-context"
 
 interface Message {
   id: string
@@ -110,6 +111,7 @@ export default function LessonDetailPage() {
   const [videoCollapsed, setVideoCollapsed] = useState(false)
   const [isCompletingLesson, setIsCompletingLesson] = useState(false)
   const { error: showError, success: showSuccess } = useNotification()
+  const { updateMeowcoins } = useProfile()
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
@@ -169,6 +171,11 @@ export default function LessonDetailPage() {
         showSuccess(`Урок виконано! +${result.xp_earned} XP, +${result.meowcoins_earned} монет 🎉`)
         // Update lesson to show as completed
         setLesson((prev) => prev ? { ...prev, completed: true } : null)
+
+        // Update meowcoins in header
+        if (result.total_meowcoins !== undefined) {
+          updateMeowcoins(result.total_meowcoins)
+        }
       }
     } catch (err) {
       console.error("Error completing lesson:", err)
@@ -235,6 +242,11 @@ export default function LessonDetailPage() {
         xp_earned: result.xp_earned
       })
       setShowTestResults(true)
+
+      // Update meowcoins in header
+      if (result.total_meowcoins !== undefined) {
+        updateMeowcoins(result.total_meowcoins)
+      }
 
       showSuccess(`Чудова робота! Ви заробили ${result.meowcoins_earned} монет! 🎉`)
     } catch (err) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useProfile } from "@/contexts/profile-context"
 import {
   Menu,
   Moon,
@@ -34,22 +35,8 @@ export function Header({ onSidebarToggle }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const router = useRouter()
-  const [coins, setCoins] = useState(0)
+  const { meowcoins } = useProfile()
   const [pageTitle, setPageTitle] = useState("")
-
-  useEffect(() => {
-    const fetchCoins = async () => {
-      try {
-        const profile = await fetchWithAuth("/profiles/me")
-        setCoins(profile.meowcoins || 0)
-      } catch (err) {
-        console.error("Error fetching coins:", err)
-      }
-    }
-
-    // Only fetch when pathname changes (page navigation)
-    fetchCoins()
-  }, [pathname])
 
   useEffect(() => {
     const fetchPageTitle = async () => {
@@ -111,7 +98,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
         <div className="flex items-center gap-4">
           {/* Coins counter */}
           <div className="flex items-center gap-2 text-sm font-sans hidden sm:flex">
-            <span className="font-medium">{coins} coins</span>
+            <span className="font-medium">{meowcoins} coins</span>
           </div>
 
           {/* Theme toggle */}
