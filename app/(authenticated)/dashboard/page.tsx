@@ -42,11 +42,14 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true)
+        console.log('[Dashboard] Fetching dashboard data...')
 
         const dash = await fetchWithAuth("/profiles/me/stats")
+        console.log('[Dashboard] Stats received:', dash)
         setDashboardData(dash || { streak: 0, lessons_completed: 0, tests_completed: 0 })
 
         const prof = await fetchWithAuth("/profiles/me")
+        console.log('[Dashboard] Profile received:', prof)
         setProfileData(prof || { level: 1, xp: 0, max_xp: 5000, meowcoins: 0 })
       } catch (err) {
         if (err instanceof Error && err.message.includes("Not Found")) {

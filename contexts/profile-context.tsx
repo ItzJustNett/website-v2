@@ -30,6 +30,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   const updateMeowcoins = (coins: number) => {
+    console.log('[ProfileContext] Updating meowcoins from', meowcoins, 'to', coins)
     setMeowcoins(coins)
   }
 
