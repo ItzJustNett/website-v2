@@ -70,8 +70,8 @@ export default function StorePage() {
     try {
       setIsLoading(true)
       const [storeData, profileData] = await Promise.all([
-        fetchWithAuth("/store"),
-        fetchWithAuth("/profiles/me")
+        api.get("/store"),
+        api.get("/profiles/me")
       ])
 
       console.log("Store data:", storeData)

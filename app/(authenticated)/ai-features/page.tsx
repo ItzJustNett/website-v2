@@ -83,9 +83,7 @@ export default function AIFeaturesPage() {
     if (!confirm("Ви впевнені, що хочете видалити цей тест?")) return
 
     try {
-      await fetchWithAuth(`/saved-tests/${testId}`, {
-        method: "DELETE",
-      })
+      await api.delete(`/saved-tests/${testId}`)
       showSuccess("Тест успішно видалено")
       setSavedTests(savedTests.filter((test) => test.id !== testId))
     } catch {
@@ -97,9 +95,7 @@ export default function AIFeaturesPage() {
     if (!confirm("Ви впевнені, що хочете видалити цей конспект?")) return
 
     try {
-      await fetchWithAuth(`/saved-summaries/${summaryId}`, {
-        method: "DELETE",
-      })
+      await api.delete(`/saved-summaries/${summaryId}`)
       showSuccess("Конспект успішно видалено")
       setSavedSummaries(savedSummaries.filter((summary) => summary.id !== summaryId))
     } catch {
@@ -109,9 +105,7 @@ export default function AIFeaturesPage() {
 
   const handleToggleTestFavorite = async (testId: number) => {
     try {
-      const response = await fetchWithAuth(`/saved-tests/${testId}/favorite`, {
-        method: "PUT",
-      })
+      const response = await api.put(`/saved-tests/${testId}/favorite`)
       showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
       setSavedTests(
         savedTests.map((test) =>
@@ -125,9 +119,7 @@ export default function AIFeaturesPage() {
 
   const handleToggleSummaryFavorite = async (summaryId: number) => {
     try {
-      const response = await fetchWithAuth(`/saved-summaries/${summaryId}/favorite`, {
-        method: "PUT",
-      })
+      const response = await api.put(`/saved-summaries/${summaryId}/favorite`)
       showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
       setSavedSummaries(
         savedSummaries.map((summary) =>

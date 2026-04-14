@@ -80,9 +80,7 @@ export default function TestsPage() {
   const handleCreateTest = async (lessonId: string) => {
     try {
       setCreatingTest(lessonId)
-      await fetchWithAuth(`/lessons/${lessonId}/test`, {
-        method: "GET",
-      })
+      await api.get(`/lessons/${lessonId}/test`)
       showSuccess("Тест створено та збережено! Відкриття уроку...")
       // Refresh saved tests
       const data = await api.get("/saved-tests")
@@ -99,9 +97,7 @@ export default function TestsPage() {
     if (!confirm("Ви впевнені, що хочете видалити цей тест?")) return
 
     try {
-      await fetchWithAuth(`/saved-tests/${testId}`, {
-        method: "DELETE",
-      })
+      await api.delete(`/saved-tests/${testId}`)
       showSuccess("Тест успішно видалено")
       setSavedTests(savedTests.filter((test) => test.id !== testId))
     } catch {
@@ -111,9 +107,7 @@ export default function TestsPage() {
 
   const handleToggleFavorite = async (testId: number) => {
     try {
-      const response = await fetchWithAuth(`/saved-tests/${testId}/favorite`, {
-        method: "PUT",
-      })
+      const response = await api.put(`/saved-tests/${testId}/favorite`)
       showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
       setSavedTests(
         savedTests.map((test) =>

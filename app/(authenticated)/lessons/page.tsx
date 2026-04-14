@@ -216,7 +216,7 @@ export default function LessonsPage() {
           ? `/lessons/search?q=${encodeURIComponent(searchQuery.trim())}`
           : "/lessons"
 
-        const data = await fetchWithAuth(endpoint)
+        const data = await api.get(endpoint)
         const lessons = Array.isArray(data)
           ? data
           : (data?.lessons || data?.results || data?.data || data?.items || [])
