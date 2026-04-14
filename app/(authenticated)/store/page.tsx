@@ -114,11 +114,7 @@ export default function StorePage() {
   const handleEquip = async (itemId: string) => {
     try {
       setEquippingItemId(itemId)
-      await api.get("/inventory/equip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id: itemId })
-      })
+      await api.post("/inventory/equip", { item_id: itemId })
 
       showSuccess("Предмет екіпіровано!")
       await fetchData()
@@ -132,11 +128,7 @@ export default function StorePage() {
   const handleUnequip = async (itemId: string) => {
     try {
       setEquippingItemId(itemId)
-      await api.get("/inventory/unequip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id: itemId })
-      })
+      await api.post("/inventory/unequip", { item_id: itemId })
 
       showSuccess("Предмет знято!")
       await fetchData()
