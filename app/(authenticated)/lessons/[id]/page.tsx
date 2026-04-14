@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/immersive/error-state"
 import { motion } from "framer-motion"
 import { BookOpen, Play, Send, Zap, ChevronUp, ChevronDown } from "lucide-react"
 import { api } from "@/lib/api-client"
+import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
 import { useProfile } from "@/contexts/profile-context"
 
@@ -163,9 +164,13 @@ export default function LessonDetailPage() {
   const handleCompleteLesson = async () => {
     try {
       setIsCompletingLesson(true)
+      console.log('[Lesson] Marking lesson as complete:', lessonId)
+
       const result = await fetchWithAuth(`/lessons/${lessonId}/complete`, {
         method: "POST",
       })
+
+      console.log('[Lesson] Complete response:', result)
 
       if (result.success) {
         showSuccess(`Урок виконано! +${result.xp_earned} XP, +${result.meowcoins_earned} монет 🎉`)
@@ -174,12 +179,13 @@ export default function LessonDetailPage() {
 
         // Update meowcoins in header
         if (result.total_meowcoins !== undefined) {
+          console.log('[Lesson] Updating meowcoins:', result.total_meowcoins)
           updateMeowcoins(result.total_meowcoins)
         }
       }
     } catch (err) {
       console.error("Error completing lesson:", err)
-      // Don't show error - lesson completion is a nice-to-have
+      showError("Помилка при завершенні уроку")
     } finally {
       setIsCompletingLesson(false)
     }
@@ -237,6 +243,8 @@ export default function LessonDetailPage() {
         })
       })
 
+      console.log('[Test] Submission result:', result)
+
       setTestRewards({
         meowcoins_earned: result.meowcoins_earned,
         xp_earned: result.xp_earned
@@ -245,6 +253,7 @@ export default function LessonDetailPage() {
 
       // Update meowcoins in header
       if (result.total_meowcoins !== undefined) {
+        console.log('[Test] Updating meowcoins to:', result.total_meowcoins)
         updateMeowcoins(result.total_meowcoins)
       }
 

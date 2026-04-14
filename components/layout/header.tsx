@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useProfile } from "@/contexts/profile-context"
 import {
@@ -11,6 +11,7 @@ import {
   Settings,
   ChevronDown,
   ArrowLeft,
+  Coins,
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { usePathname, useRouter } from "next/navigation"
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { fetchWithAuth } from "@/lib/api"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface HeaderProps {
   sidebarOpen: boolean
@@ -37,6 +39,9 @@ export function Header({ onSidebarToggle }: HeaderProps) {
   const router = useRouter()
   const { meowcoins } = useProfile()
   const [pageTitle, setPageTitle] = useState("")
+  const [displayCoins, setDisplayCoins] = useState(meowcoins)
+  const [coinDiff, setCoinDiff] = useState<number | null>(null)
+  const prevCoinsRef = useRef(meowcoins)
 
   useEffect(() => {
     const fetchPageTitle = async () => {
@@ -58,6 +63,38 @@ export function Header({ onSidebarToggle }: HeaderProps) {
 
     fetchPageTitle()
   }, [pathname])
+
+  // Animate coin counter when meowcoins change
+  useEffect(() => {
+    if (meowcoins !== prevCoinsRef.current) {
+      const diff = meowcoins - prevCoinsRef.current
+      if (diff > 0) {
+        setCoinDiff(diff)
+        // Clear the +X indicator after animation
+        setTimeout(() => setCoinDiff(null), 2000)
+      }
+
+      // Animate the counter
+      const duration = 500
+      const steps = 20
+      const increment = (meowcoins - displayCoins) / steps
+      let currentStep = 0
+
+      const interval = setInterval(() => {
+        currentStep++
+        if (currentStep >= steps) {
+          setDisplayCoins(meowcoins)
+          clearInterval(interval)
+        } else {
+          setDisplayCoins(prev => Math.round(prev + increment))
+        }
+      }, duration / steps)
+
+      prevCoinsRef.current = meowcoins
+
+      return () => clearInterval(interval)
+    }
+  }, [meowcoins])
 
   return (
     <header className="sticky top-0 z-40 border-b border-black dark:border-white bg-white dark:bg-black">
@@ -97,8 +134,29 @@ export function Header({ onSidebarToggle }: HeaderProps) {
         {/* Right side */}
         <div className="flex items-center gap-4">
           {/* Coins counter */}
-          <div className="flex items-center gap-2 text-sm font-sans hidden sm:flex">
-            <span className="font-medium">{meowcoins} coins</span>
+          <div className="relative flex items-center gap-2 text-sm font-sans hidden sm:flex">
+            <Coins className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+            <motion.span
+              key={displayCoins}
+              initial={{ scale: coinDiff ? 1.2 : 1 }}
+              animate={{ scale: 1 }}
+              className="font-medium tabular-nums"
+            >
+              {displayCoins}
+            </motion.span>
+            <AnimatePresence>
+              {coinDiff !== null && coinDiff > 0 && (
+                <motion.span
+                  initial={{ opacity: 1, y: 0, x: 0 }}
+                  animate={{ opacity: 0, y: -20, x: 10 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 2 }}
+                  className="absolute left-full ml-2 text-green-600 dark:text-green-400 font-bold"
+                >
+                  +{coinDiff}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Theme toggle */}
