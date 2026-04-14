@@ -64,35 +64,21 @@ export function Header({ onSidebarToggle }: HeaderProps) {
     fetchPageTitle()
   }, [pathname])
 
-  // Animate coin counter when meowcoins change
+  // Update coin counter INSTANTLY when meowcoins change
   useEffect(() => {
     if (meowcoins !== prevCoinsRef.current) {
       const diff = meowcoins - prevCoinsRef.current
+
+      // Update display immediately
+      setDisplayCoins(meowcoins)
+
       if (diff > 0) {
+        // Show +X popup
         setCoinDiff(diff)
-        // Clear the +X indicator after animation
-        setTimeout(() => setCoinDiff(null), 2000)
+        setTimeout(() => setCoinDiff(null), 1500)
       }
 
-      // Animate the counter
-      const duration = 500
-      const steps = 20
-      const increment = (meowcoins - displayCoins) / steps
-      let currentStep = 0
-
-      const interval = setInterval(() => {
-        currentStep++
-        if (currentStep >= steps) {
-          setDisplayCoins(meowcoins)
-          clearInterval(interval)
-        } else {
-          setDisplayCoins(prev => Math.round(prev + increment))
-        }
-      }, duration / steps)
-
       prevCoinsRef.current = meowcoins
-
-      return () => clearInterval(interval)
     }
   }, [meowcoins])
 
@@ -138,8 +124,9 @@ export function Header({ onSidebarToggle }: HeaderProps) {
             <Coins className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
             <motion.span
               key={displayCoins}
-              initial={{ scale: coinDiff ? 1.2 : 1 }}
+              initial={{ scale: coinDiff ? 1.3 : 1 }}
               animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 15 }}
               className="font-medium tabular-nums"
             >
               {displayCoins}
@@ -147,11 +134,11 @@ export function Header({ onSidebarToggle }: HeaderProps) {
             <AnimatePresence>
               {coinDiff !== null && coinDiff > 0 && (
                 <motion.span
-                  initial={{ opacity: 1, y: 0, x: 0 }}
-                  animate={{ opacity: 0, y: -20, x: 10 }}
+                  initial={{ opacity: 1, y: 0, x: 0, scale: 1.5 }}
+                  animate={{ opacity: 0, y: -30, x: 15, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 2 }}
-                  className="absolute left-full ml-2 text-green-600 dark:text-green-400 font-bold"
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="absolute left-full ml-1 text-lg text-green-500 dark:text-green-400 font-bold pointer-events-none"
                 >
                   +{coinDiff}
                 </motion.span>
