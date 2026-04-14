@@ -100,11 +100,7 @@ export default function StorePage() {
 
     try {
       setBuyingItemId(itemId)
-      await api.get("/store/buy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id: itemId })
-      })
+      await api.post("/store/buy", { item_id: itemId })
 
       showSuccess("Предмет куплено!")
       await fetchData()
