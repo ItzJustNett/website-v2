@@ -198,7 +198,6 @@ export default function LessonsPage() {
           setIsAutoFiltered(true)
         }
       } catch {}
-      }
     }
 
     fetchUserProfile()
