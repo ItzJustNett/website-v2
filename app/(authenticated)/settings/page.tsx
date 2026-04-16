@@ -9,6 +9,7 @@ import { motion } from "framer-motion"
 import { Settings, User, Mail, Lock, Cat, GraduationCap } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useProfile } from "@/contexts/profile-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
 const CATS = [
@@ -30,6 +31,7 @@ export default function SettingsPage() {
   const [selectedCat, setSelectedCat] = useState<number | null>(null)
 
   const { success: showSuccess, error: showError } = useNotification()
+  const { refreshProfile } = useProfile()
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -111,6 +113,7 @@ export default function SettingsPage() {
         grade: selectedGrade,
         cat_id: selectedCat
       })
+      await refreshProfile()
       showSuccess("Профіль оновлено")
     } catch (err) {
       showError("Не вдалося оновити профіль")

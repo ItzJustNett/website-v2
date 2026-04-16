@@ -7,6 +7,7 @@ interface ProfileContextType {
   meowcoins: number
   xp: number
   level: number
+  grade: number | null
   refreshProfile: () => Promise<void>
   updateMeowcoins: (coins: number) => void
 }
@@ -17,6 +18,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [meowcoins, setMeowcoins] = useState(0)
   const [xp, setXp] = useState(0)
   const [level, setLevel] = useState(1)
+  const [grade, setGrade] = useState<number | null>(null)
 
   const refreshProfile = async () => {
     try {
@@ -24,6 +26,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setMeowcoins(profile.meowcoins || 0)
       setXp(profile.xp || 0)
       setLevel(profile.level || 1)
+      setGrade(profile.grade || null)
     } catch (err) {
       console.error("Error fetching profile:", err)
     }
@@ -44,6 +47,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         meowcoins,
         xp,
         level,
+        grade,
         refreshProfile,
         updateMeowcoins,
       }}

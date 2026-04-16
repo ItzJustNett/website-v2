@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useProfile } from "@/contexts/profile-context"
 import Link from "next/link"
 
 interface Lesson {
@@ -84,9 +85,10 @@ export default function LessonsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>("cards")
-  const [userGrade, setUserGrade] = useState<string | null>(null)
   const [isAutoFiltered, setIsAutoFiltered] = useState(false)
   const { error: showError } = useNotification()
+  const { grade: profileGrade } = useProfile()
+  const userGrade = profileGrade ? profileGrade.toString() : null
 
   const extractGrade = (lesson: Lesson): string | null => {
     const courseId = lesson.course_id || lesson.id
@@ -187,21 +189,11 @@ export default function LessonsPage() {
   }, [filteredAndSortedLessons, currentPage])
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const profile = await api.get("/profiles/me")
-        if (profile && profile.grade) {
-          const gradeStr = profile.grade.toString()
-          setUserGrade(gradeStr)
-
-          setGradeFilter(gradeStr)
-          setIsAutoFiltered(true)
-        }
-      } catch {}
+    if (userGrade) {
+      setGradeFilter(userGrade)
+      setIsAutoFiltered(true)
     }
-
-    fetchUserProfile()
-  }, [])
+  }, [userGrade])
 
   useEffect(() => {
     setCurrentPage(1)
