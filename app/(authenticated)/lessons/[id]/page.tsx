@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
@@ -86,7 +86,10 @@ function getYouTubeEmbedUrl(url: string): string {
 export default function LessonDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const lessonId = params?.id as string
+  const summaryIdParam = searchParams.get("summaryId")
+  const testIdParam = searchParams.get("testId")
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -286,6 +289,37 @@ export default function LessonDetailPage() {
     })
     return Math.round((correct / test.questions.length) * 100)
   }
+
+  // Load saved summary/test from query params
+  useEffect(() => {
+    if (isLoading) return
+
+    const loadSavedContent = async () => {
+      if (summaryIdParam) {
+        try {
+          const data = await fetchWithAuth(`/saved-summaries/${summaryIdParam}`)
+          setSummary({ title: data.title, summary: data.summary, key_points: data.key_points, lesson_id: lessonId })
+        } catch (err) {
+          console.error("Error loading saved summary:", err)
+          showError("Не вдалося завантажити збережений конспект")
+        }
+      }
+      if (testIdParam) {
+        try {
+          const data = await fetchWithAuth(`/saved-tests/${testIdParam}`)
+          const testContent = data.test_content
+          setTest({ title: testContent.title, questions: testContent.questions, lesson_id: lessonId })
+          setTestAnswers({})
+          setShowTestResults(false)
+        } catch (err) {
+          console.error("Error loading saved test:", err)
+          showError("Не вдалося завантажити збережений тест")
+        }
+      }
+    }
+
+    loadSavedContent()
+  }, [isLoading, summaryIdParam, testIdParam, lessonId, showError])
 
   useEffect(() => {
     if (!lessonId) return
@@ -592,12 +626,6 @@ export default function LessonDetailPage() {
               <Play className="w-4 h-4 mb-0.5" />
               <span className="text-[9px]">{lesson?.completed ? "✓" : "Старт"}</span>
             </ButtonEnhanced>
-
-            {!lesson?.completed && (
-              <div className="flex items-center justify-center w-full py-1 text-[10px] text-yellow-600 dark:text-yellow-400 font-medium">
-                +5 🪙
-              </div>
-            )}
 
             <ButtonEnhanced
               variant="outline"
