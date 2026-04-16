@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState, useEffect } from "react"
 import {
   BookOpen,
   Zap,
@@ -12,7 +11,8 @@ import {
   Home,
   Settings,
 } from "lucide-react"
-import { fetchWithAuth } from "@/lib/api"
+import { CatAvatar } from "@/components/cat-avatar"
+import { useProfile } from "@/contexts/profile-context"
 
 const navItems = [
   { href: "/dashboard", label: "Головна", icon: Home },
@@ -23,27 +23,9 @@ const navItems = [
   { href: "/settings", label: "Налаштування", icon: Settings },
 ]
 
-const CAT_IMAGES = {
-  0: "/orange.png",
-  1: "/gray.png",
-  2: "/black.png"
-}
-
 export function Sidebar() {
   const pathname = usePathname()
-  const [catId, setCatId] = useState<number | null>(null)
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const profile = await fetchWithAuth("/profiles/me")
-        setCatId(profile.cat_id)
-      } catch (err) {
-        console.error("Error fetching profile:", err)
-      }
-    }
-    fetchProfile()
-  }, [])
+  const { catId, equippedItems } = useProfile()
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-black dark:border-white bg-white dark:bg-black h-screen sticky top-0">
@@ -81,15 +63,9 @@ export function Sidebar() {
 
         {/* Bottom info - User's Cat */}
         <div className="pt-6 border-t border-black dark:border-white">
-          {catId !== null && (
-            <div className="flex items-center justify-center px-4">
-              <img
-                src={CAT_IMAGES[catId as keyof typeof CAT_IMAGES]}
-                alt="Your cat"
-                className="w-48 h-48 object-contain"
-              />
-            </div>
-          )}
+          <div className="flex items-center justify-center px-4">
+            <CatAvatar catId={catId} equippedItems={equippedItems} size={192} />
+          </div>
         </div>
       </nav>
     </aside>

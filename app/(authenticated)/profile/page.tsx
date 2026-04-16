@@ -11,6 +11,7 @@ import { LogOut } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { CatAvatar } from "@/components/cat-avatar"
 
 interface UserProfile {
   user_id: string
@@ -23,6 +24,8 @@ interface UserProfile {
   streak: number
   lessons_completed: number
   tests_completed: number
+  cat_id: number
+  equipped_items: string[]
 }
 
 export default function ProfilePage() {
@@ -88,17 +91,24 @@ export default function ProfilePage() {
         className="space-y-16"
       >
         {/* Profile Header */}
-        <div>
-          <h1 className="text-5xl font-serif font-bold mb-3">
-            {profile?.username || user?.username}
-          </h1>
-          <div className="space-y-2">
-            {profile?.email && (
-              <p className="text-sm font-sans text-muted-foreground">{profile.email}</p>
-            )}
-            <p className="text-sm font-sans text-muted-foreground">
-              Рівень {profile?.level || 0} · Серія {profile?.streak || 0} днів · {profile?.meowcoins || 0} монет
-            </p>
+        <div className="flex items-center gap-8">
+          <CatAvatar
+            catId={profile?.cat_id ?? 0}
+            equippedItems={profile?.equipped_items || []}
+            size={128}
+          />
+          <div>
+            <h1 className="text-5xl font-serif font-bold mb-3">
+              {profile?.username || user?.username}
+            </h1>
+            <div className="space-y-2">
+              {profile?.email && (
+                <p className="text-sm font-sans text-muted-foreground">{profile.email}</p>
+              )}
+              <p className="text-sm font-sans text-muted-foreground">
+                Рівень {profile?.level || 0} · Серія {profile?.streak || 0} днів · {profile?.meowcoins || 0} монет
+              </p>
+            </div>
           </div>
         </div>
 

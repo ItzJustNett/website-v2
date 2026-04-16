@@ -50,7 +50,8 @@ const ITEM_EMOJIS: Record<string, string> = {
   "tie": "👔",
   "collar": "🔷",
   "badge": "⭐",
-  "goggles": "🥽"
+  "goggles": "🥽",
+  "hat": "🎩"
 }
 
 export default function StorePage() {
