@@ -42,6 +42,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
   const [displayCoins, setDisplayCoins] = useState(meowcoins)
   const [coinDiff, setCoinDiff] = useState<number | null>(null)
   const prevCoinsRef = useRef(meowcoins)
+  const hasInitializedRef = useRef(false)
 
   useEffect(() => {
     const fetchPageTitle = async () => {
@@ -72,13 +73,14 @@ export function Header({ onSidebarToggle }: HeaderProps) {
       // Update display immediately
       setDisplayCoins(meowcoins)
 
-      if (diff > 0) {
-        // Show +X popup
+      // Only show +X animation for real earnings, not initial page load
+      if (diff > 0 && hasInitializedRef.current) {
         setCoinDiff(diff)
         setTimeout(() => setCoinDiff(null), 1500)
       }
 
       prevCoinsRef.current = meowcoins
+      hasInitializedRef.current = true
     }
   }, [meowcoins])
 

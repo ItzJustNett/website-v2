@@ -79,16 +79,16 @@ export default function LessonsPage() {
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>("title")
-  const [gradeFilter, setGradeFilter] = useState<GradeFilter>("all")
+  const { grade: profileGrade } = useProfile()
+  const userGrade = profileGrade ? profileGrade.toString() : null
+  const [gradeFilter, setGradeFilter] = useState<GradeFilter>(() => userGrade || "all")
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("all")
   const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>("cards")
-  const [isAutoFiltered, setIsAutoFiltered] = useState(false)
+  const [isAutoFiltered, setIsAutoFiltered] = useState(() => !!userGrade)
   const { error: showError } = useNotification()
-  const { grade: profileGrade } = useProfile()
-  const userGrade = profileGrade ? profileGrade.toString() : null
 
   const extractGrade = (lesson: Lesson): string | null => {
     const courseId = lesson.course_id || lesson.id
@@ -236,7 +236,7 @@ export default function LessonsPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-3xl font-sans font-bold flex items-center gap-2">
             <BookOpen className="w-8 h-8" />
             Уроки
           </h1>
@@ -417,7 +417,7 @@ export default function LessonsPage() {
 
                             
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-lg group-hover:underline decoration-2 underline-offset-4 truncate text-foreground">
+                              <h3 className="font-sans font-bold text-lg group-hover:underline decoration-2 underline-offset-4 truncate text-foreground">
                                 {lesson.title}
                               </h3>
                             </div>
@@ -480,7 +480,7 @@ export default function LessonsPage() {
                             </div>
 
                             
-                            <h3 className="font-bold text-base mb-3 line-clamp-2 group-hover:underline decoration-2 underline-offset-4 text-foreground flex-grow">
+                            <h3 className="font-sans font-bold text-base mb-3 line-clamp-2 group-hover:underline decoration-2 underline-offset-4 text-foreground flex-grow">
                               {lesson.title}
                             </h3>
 
