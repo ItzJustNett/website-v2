@@ -45,9 +45,9 @@ const ITEM_IMAGES: Record<string, string> = {
 }
 
 // Per-cat style overrides for image items: [catId][itemId] → { scale, offsetY }
-const IMAGE_CAT_OVERRIDES: Record<number, Record<string, { scale: number; offsetY: number }>> = {
+const IMAGE_CAT_OVERRIDES: Record<number, Record<string, { scale: number; offsetY: number; offsetX?: number }>> = {
   2: { // black cat
-    sunglasses: { scale: 3, offsetY: -90 },
+    sunglasses: { scale: 3, offsetY: -90, offsetX: -2 },
   },
 }
 
@@ -117,12 +117,13 @@ export function CatAvatar({ catId, equippedItems = [], size = 192 }: CatAvatarPr
               const overrides = IMAGE_CAT_OVERRIDES[catId]?.[itemId]
               const scale = overrides?.scale ?? 1
               const offsetY = overrides?.offsetY ?? 0
+              const offsetX = overrides?.offsetX ?? 0
               const imgSize = emojiSize * 1.5 * scale
               return (
                 <img
                   src={image}
                   alt={itemId}
-                  style={{ width: imgSize, height: imgSize, marginTop: offsetY }}
+                  style={{ width: imgSize, height: imgSize, marginTop: offsetY, marginLeft: offsetX }}
                   className="object-contain"
                 />
               )
