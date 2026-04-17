@@ -369,286 +369,301 @@ export default function LessonDetailPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="h-screen flex"
+        className="min-h-screen"
       >
-        {/* Main content area - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          {/* YouTube Video Section - Collapsible */}
-          {lesson.youtube_link && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="w-full bg-black relative"
-            >
-              {/* Collapse/Expand Button */}
-              <button
-                onClick={() => setVideoCollapsed(!videoCollapsed)}
-                className="absolute top-4 left-4 z-50 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur text-white font-medium hover:bg-black/90 transition-colors flex items-center gap-2"
-              >
-                {videoCollapsed ? (
-                  <>
-                    <ChevronDown className="w-4 h-4" />
-                    Показати відео
-                  </>
-                ) : (
-                  <>
-                    <ChevronUp className="w-4 h-4" />
-                    Сховати відео
-                  </>
-                )}
-              </button>
-
-              {/* Status badges overlay on video */}
-              {(lesson.difficulty || lesson.completed) && (
-                <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-                  {lesson.difficulty && (
-                    <span className="text-xs px-3 py-1.5 rounded-full bg-black/80 backdrop-blur text-white font-medium">
-                      {lesson.difficulty}
-                    </span>
-                  )}
-                  {lesson.completed && (
-                    <span className="text-xs px-3 py-1.5 rounded-full bg-green-500/90 backdrop-blur text-white">
-                      ✓ Виконано
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {!videoCollapsed && (
-                <div className="w-full aspect-video max-h-[60vh]">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={getYouTubeEmbedUrl(lesson.youtube_link)}
-                    title={lesson.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {/* Scrollable content below video */}
-          <div className="p-6 space-y-4">
-
-            {/* Test Section */}
-            {test && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <GlassCard>
-                  <h2 className="text-2xl font-bold mb-6">Тест: {test.title}</h2>
-
-                  {!showTestResults ? (
-                    <div className="space-y-6">
-                      {test.questions.map((question, qIdx) => (
-                        <div key={qIdx} className="border-b border-secondary pb-6 last:border-0">
-                          <p className="font-semibold mb-4 text-lg">
-                            {qIdx + 1}. {question.question}
-                          </p>
-                          <div className="space-y-2">
-                            {question.options.map((option, oIdx) => (
-                              <button
-                                key={oIdx}
-                                onClick={() => handleSelectAnswer(qIdx, oIdx)}
-                                className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
-                                  testAnswers[qIdx] === oIdx
-                                    ? "border-primary bg-primary/10"
-                                    : "border-secondary hover:border-primary/50"
-                                }`}
-                              >
-                                <span className="font-medium mr-2">
-                                  {String.fromCharCode(65 + oIdx)}.
-                                </span>
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      <ButtonEnhanced
-                        onClick={handleSubmitTest}
-                        disabled={isSubmittingTest || Object.keys(testAnswers).length === 0}
-                        glow
-                        className="w-full mt-6"
-                      >
-                        {isSubmittingTest ? "Відправлення..." : "Відправити тест"}
-                      </ButtonEnhanced>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="text-center py-8">
-                        <div className="text-5xl font-bold text-primary mb-2">
-                          {calculateScore()}%
-                        </div>
-                        <p className="text-muted-foreground mb-4">
-                          Відповіли на {Object.keys(testAnswers).length} з {test.questions.length} питань
-                        </p>
-
-                        {/* Rewards Display */}
-                        {testRewards && (
-                          <div className="flex items-center justify-center gap-6 mt-6">
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                              <span className="text-2xl">🪙</span>
-                              <div>
-                                <div className="text-sm text-muted-foreground">Зароблено монет</div>
-                                <div className="text-xl font-bold text-yellow-500">+{testRewards.meowcoins_earned}</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                              <span className="text-2xl">⚡</span>
-                              <div>
-                                <div className="text-sm text-muted-foreground">Зароблено XP</div>
-                                <div className="text-xl font-bold text-blue-500">+{testRewards.xp_earned}</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {test.questions.map((question, qIdx) => {
-                        const userAnswer = testAnswers[qIdx]
-                        const isCorrect = userAnswer === question.correct_answer
-                        return (
-                          <div
-                            key={qIdx}
-                            className={`border-l-4 p-4 rounded ${
-                              isCorrect
-                                ? "border-green-500 bg-green-500/10"
-                                : "border-red-500 bg-red-500/10"
-                            }`}
-                          >
-                            <p className="font-semibold mb-2">
-                              {qIdx + 1}. {question.question}
-                            </p>
-                            <p className="text-sm mb-2">
-                              Ваша відповідь: {userAnswer !== undefined ? question.options[userAnswer] : "Не відповіли"}
-                            </p>
-                            {!isCorrect && (
-                              <p className="text-sm text-green-400">
-                                Правильна відповідь: {question.options[question.correct_answer]}
-                              </p>
-                            )}
-                          </div>
-                        )
-                      })}
-
-                      <ButtonEnhanced
-                        onClick={() => {
-                          setTest(null)
-                          setTestAnswers({})
-                          setShowTestResults(false)
-                          setTestRewards(null)
-                        }}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        Пройти тест знову
-                      </ButtonEnhanced>
-                    </div>
-                  )}
-                </GlassCard>
-              </motion.div>
-            )}
-
-            {/* Summary Section */}
-            {summary && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <GlassCard>
-                  <h2 className="text-2xl font-bold mb-6">📝 Конспект: {summary.title}</h2>
-
-                  <div className="space-y-6">
-                    {/* Main Summary Text */}
-                    <div className="prose prose-invert max-w-none">
-                      <p className="text-base leading-relaxed whitespace-pre-wrap">
-                        {summary.summary}
-                      </p>
-                    </div>
-
-                    {/* Key Points */}
-                    {summary.key_points && summary.key_points.length > 0 && (
-                      <div className="mt-6">
-                        <h3 className="text-lg font-semibold mb-4">🔑 Ключові моменти:</h3>
-                        <ul className="space-y-2">
-                          {summary.key_points.map((point, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20"
-                            >
-                              <span className="text-primary font-bold mt-0.5">
-                                {idx + 1}.
-                              </span>
-                              <span className="flex-1">{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Close Button */}
-                    <ButtonEnhanced
-                      onClick={() => setSummary(null)}
-                      variant="outline"
-                      className="w-full mt-6"
-                    >
-                      Закрити конспект
-                    </ButtonEnhanced>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Sidebar - Action Buttons (compact) */}
+        {/* YouTube Video Section - Collapsible */}
+        {lesson.youtube_link && (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-16 flex flex-col gap-2 p-2 border-l border-secondary bg-background/50"
+            className="w-full bg-black relative"
           >
+            {/* Collapse/Expand Button */}
+            <button
+              onClick={() => setVideoCollapsed(!videoCollapsed)}
+              className="absolute top-4 left-4 z-50 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur text-white font-medium hover:bg-black/90 transition-colors flex items-center gap-2"
+            >
+              {videoCollapsed ? (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Показати відео
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Сховати відео
+                </>
+              )}
+            </button>
+
+            {!videoCollapsed && (
+              <div className="w-full aspect-video max-h-[60vh]">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={getYouTubeEmbedUrl(lesson.youtube_link)}
+                  title={lesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Lesson header + actions */}
+        <div className="px-6 pt-6 pb-4 border-b border-foreground/10">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-sans font-bold text-foreground mb-1">
+                {lesson.title}
+              </h1>
+              {lesson.description && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {lesson.description}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {lesson.difficulty && (
+                <span className="text-xs px-3 py-1.5 rounded-full border border-foreground/20 font-medium">
+                  {lesson.difficulty}
+                </span>
+              )}
+              {lesson.completed && (
+                <span className="text-xs px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 font-medium">
+                  Виконано
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action buttons - horizontal toolbar */}
+          <div className="flex items-center gap-3">
             <ButtonEnhanced
-              glow
-              className="flex flex-col items-center justify-center w-full h-14 p-1"
-              title="Розпочати урок"
+              glow={!lesson?.completed}
+              className="flex items-center gap-2 px-5 py-2.5"
               onClick={handleCompleteLesson}
               disabled={isCompletingLesson || lesson?.completed}
             >
-              <Play className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">{lesson?.completed ? "✓" : "Старт"}</span>
+              <Play className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {isCompletingLesson ? "..." : lesson?.completed ? "Виконано" : "Почати урок"}
+              </span>
             </ButtonEnhanced>
 
             <ButtonEnhanced
               variant="outline"
-              className="flex flex-col items-center justify-center w-full h-14 p-1"
+              className="flex items-center gap-2 px-5 py-2.5"
               onClick={handleCreateTest}
               disabled={isCreatingTest}
-              title="Пройти тест"
             >
-              <Zap className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">{isCreatingTest ? "..." : "Тест"}</span>
+              <Zap className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {isCreatingTest ? "Генерація..." : "Згенерувати тест"}
+              </span>
             </ButtonEnhanced>
 
             <ButtonEnhanced
               onClick={handleGenerateSummary}
               disabled={isGeneratingSummary}
               variant="outline"
-              className="flex flex-col items-center justify-center w-full h-14 p-1"
-              title="Згенерувати конспект"
+              className="flex items-center gap-2 px-5 py-2.5"
             >
-              <BookOpen className="w-4 h-4 mb-0.5" />
-              <span className="text-[9px]">{isGeneratingSummary ? "..." : "Конспект"}</span>
+              <BookOpen className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {isGeneratingSummary ? "Генерація..." : "Згенерувати конспект"}
+              </span>
             </ButtonEnhanced>
-          </motion.div>
+          </div>
+        </div>
+
+        {/* Content area */}
+        <div className="p-6 space-y-4">
+
+          {/* Test Section */}
+          {test && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <GlassCard hover={false}>
+                <h2 className="text-2xl font-sans font-bold mb-6">Тест: {test.title}</h2>
+
+                {!showTestResults ? (
+                  <div className="space-y-6">
+                    {test.questions.map((question, qIdx) => (
+                      <div key={qIdx} className="border-b border-foreground/10 pb-6 last:border-0">
+                        <p className="font-sans font-semibold mb-4 text-lg">
+                          {qIdx + 1}. {question.question}
+                        </p>
+                        <div className="space-y-2">
+                          {question.options.map((option, oIdx) => (
+                            <button
+                              key={oIdx}
+                              onClick={() => handleSelectAnswer(qIdx, oIdx)}
+                              className={`w-full text-left p-3 rounded-lg border-2 transition-colors font-sans ${
+                                testAnswers[qIdx] === oIdx
+                                  ? "border-primary bg-primary/10"
+                                  : "border-foreground/10 hover:border-primary/50"
+                              }`}
+                            >
+                              <span className="font-medium mr-2">
+                                {String.fromCharCode(65 + oIdx)}.
+                              </span>
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <ButtonEnhanced
+                      onClick={handleSubmitTest}
+                      disabled={isSubmittingTest || Object.keys(testAnswers).length === 0}
+                      glow
+                      className="w-full mt-6"
+                    >
+                      {isSubmittingTest ? "Відправлення..." : "Відправити тест"}
+                    </ButtonEnhanced>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="text-center py-8">
+                      <div className="text-5xl font-bold text-primary mb-2">
+                        {calculateScore()}%
+                      </div>
+                      <p className="text-muted-foreground mb-4">
+                        Відповіли на {Object.keys(testAnswers).length} з {test.questions.length} питань
+                      </p>
+
+                      {/* Rewards Display */}
+                      {testRewards && (
+                        <div className="flex items-center justify-center gap-6 mt-6">
+                          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                            <span className="text-2xl">🪙</span>
+                            <div>
+                              <div className="text-sm text-muted-foreground">Зароблено монет</div>
+                              <div className="text-xl font-bold text-yellow-500">+{testRewards.meowcoins_earned}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <span className="text-2xl">⚡</span>
+                            <div>
+                              <div className="text-sm text-muted-foreground">Зароблено XP</div>
+                              <div className="text-xl font-bold text-blue-500">+{testRewards.xp_earned}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {test.questions.map((question, qIdx) => {
+                      const userAnswer = testAnswers[qIdx]
+                      const isCorrect = userAnswer === question.correct_answer
+                      return (
+                        <div
+                          key={qIdx}
+                          className={`border-l-4 p-4 rounded font-sans ${
+                            isCorrect
+                              ? "border-green-500 bg-green-500/10"
+                              : "border-red-500 bg-red-500/10"
+                          }`}
+                        >
+                          <p className="font-semibold mb-2">
+                            {qIdx + 1}. {question.question}
+                          </p>
+                          <p className="text-sm mb-2">
+                            Ваша відповідь: {userAnswer !== undefined ? question.options[userAnswer] : "Не відповіли"}
+                          </p>
+                          {!isCorrect && (
+                            <p className="text-sm text-green-600 dark:text-green-400">
+                              Правильна відповідь: {question.options[question.correct_answer]}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })}
+
+                    <ButtonEnhanced
+                      onClick={() => {
+                        setTest(null)
+                        setTestAnswers({})
+                        setShowTestResults(false)
+                        setTestRewards(null)
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Пройти тест знову
+                    </ButtonEnhanced>
+                  </div>
+                )}
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Summary Section */}
+          {summary && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <GlassCard hover={false}>
+                <h2 className="text-2xl font-sans font-bold mb-6">Конспект: {summary.title}</h2>
+
+                <div className="space-y-6">
+                  {/* Main Summary Text */}
+                  <div className="max-w-none">
+                    <p className="text-base font-sans leading-relaxed whitespace-pre-wrap text-foreground">
+                      {summary.summary}
+                    </p>
+                  </div>
+
+                  {/* Key Points */}
+                  {summary.key_points && summary.key_points.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-sans font-semibold mb-4">Ключові моменти:</h3>
+                      <ul className="space-y-2">
+                        {summary.key_points.map((point, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 font-sans"
+                          >
+                            <span className="text-primary font-bold mt-0.5">
+                              {idx + 1}.
+                            </span>
+                            <span className="flex-1">{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Close Button */}
+                  <ButtonEnhanced
+                    onClick={() => setSummary(null)}
+                    variant="outline"
+                    className="w-full mt-6"
+                  >
+                    Закрити конспект
+                  </ButtonEnhanced>
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Empty state when no test or summary is shown */}
+          {!test && !summary && (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-lg font-sans mb-2">Перегляньте відео та скористайтесь AI інструментами</p>
+              <p className="text-sm">Згенеруйте тест або конспект за допомогою кнопок вище</p>
+            </div>
+          )}
+        </div>
       </motion.div>
     </PageTransition>
   )

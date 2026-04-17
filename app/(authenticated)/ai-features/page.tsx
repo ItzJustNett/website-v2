@@ -154,7 +154,7 @@ export default function AIFeaturesPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
+        <h1 className="text-3xl font-sans font-bold mb-6 flex items-center gap-2">
           <Brain className="w-8 h-8" />
           AI Функції
         </h1>
@@ -163,14 +163,18 @@ export default function AIFeaturesPage() {
         <div className="flex gap-2 mb-6">
           <ButtonEnhanced
             onClick={() => setActiveTab("tests")}
-            className={activeTab === "tests" ? "bg-blue-500" : "bg-gray-500/20"}
+            className={activeTab === "tests"
+              ? "bg-blue-500 text-white"
+              : "bg-foreground/10 text-foreground hover:bg-foreground/15"}
           >
             <Zap className="w-4 h-4 mr-2" />
             Збережені тести ({savedTests.length})
           </ButtonEnhanced>
           <ButtonEnhanced
             onClick={() => setActiveTab("summaries")}
-            className={activeTab === "summaries" ? "bg-purple-500" : "bg-gray-500/20"}
+            className={activeTab === "summaries"
+              ? "bg-purple-500 text-white"
+              : "bg-foreground/10 text-foreground hover:bg-foreground/15"}
           >
             <FileText className="w-4 h-4 mr-2" />
             Збережені конспекти ({savedSummaries.length})
@@ -206,7 +210,7 @@ export default function AIFeaturesPage() {
                     <GlassCard>
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">{test.title}</h3>
+                          <h3 className="font-sans font-semibold text-lg mb-1">{test.title}</h3>
                           {test.lesson_title && (
                             <p className="text-sm text-muted-foreground mb-2">
                               {test.lesson_title}
@@ -286,7 +290,7 @@ export default function AIFeaturesPage() {
                     <GlassCard>
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">{summary.title}</h3>
+                          <h3 className="font-sans font-semibold text-lg mb-1">{summary.title}</h3>
                           {summary.lesson_title && (
                             <p className="text-sm text-muted-foreground mb-2">
                               {summary.lesson_title}
