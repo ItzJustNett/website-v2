@@ -8,6 +8,7 @@ import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
 import { motion } from "framer-motion"
 import { Store, Coins, Package, Check } from "lucide-react"
+import Image from "next/image"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 
@@ -25,8 +26,11 @@ interface Profile {
   equipped_items: string[]
 }
 
+const ITEM_IMAGES: Record<string, string> = {
+  "sunglasses": "/sunglasses.png",
+}
+
 const ITEM_EMOJIS: Record<string, string> = {
-  "sunglasses": "😎",
   "cap": "🧢",
   "moustache": "🥸",
   "butterfly": "🦋",
@@ -181,7 +185,19 @@ export default function StorePage() {
                 >
                   <GlassCard className="h-full flex flex-col">
                     <div className="text-center mb-4">
-                      <div className="text-6xl mb-2">{ITEM_EMOJIS[item.item_id] || "🎁"}</div>
+                      <div className="flex items-center justify-center h-20 mb-2">
+                        {ITEM_IMAGES[item.item_id] ? (
+                          <Image
+                            src={ITEM_IMAGES[item.item_id]}
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            className="object-contain"
+                          />
+                        ) : (
+                          <span className="text-6xl">{ITEM_EMOJIS[item.item_id] || "🎁"}</span>
+                        )}
+                      </div>
                       <h3 className="font-bold text-lg">{item.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                     </div>
