@@ -47,7 +47,7 @@ const ITEM_IMAGES: Record<string, string> = {
 // Per-cat style overrides for image items: [catId][itemId] → { scale, offsetY }
 const IMAGE_CAT_OVERRIDES: Record<number, Record<string, { scale: number; offsetY: number }>> = {
   2: { // black cat
-    sunglasses: { scale: 3, offsetY: -60 },
+    sunglasses: { scale: 3, offsetY: -90 },
   },
 }
 
