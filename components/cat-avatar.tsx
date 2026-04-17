@@ -40,8 +40,11 @@ const ITEM_POSITIONS: Record<string, ItemPosition> = {
   bandana: "side",
 }
 
+const ITEM_IMAGES: Record<string, string> = {
+  sunglasses: "/sunglasses.png",
+}
+
 const ITEM_EMOJIS: Record<string, string> = {
-  sunglasses: "\u{1F60E}",
   cap: "\u{1F9E2}",
   moustache: "\u{1F978}",
   butterfly: "\u{1F98B}",
@@ -94,19 +97,28 @@ export function CatAvatar({ catId, equippedItems = [], size = 192 }: CatAvatarPr
         className="w-full h-full object-contain"
       />
       {equippedItems.map((itemId) => {
+        const image = ITEM_IMAGES[itemId]
         const emoji = ITEM_EMOJIS[itemId]
         const position = ITEM_POSITIONS[itemId] || "head"
-        if (!emoji) return null
+        if (!image && !emoji) return null
         return (
-          <span
+          <div
             key={itemId}
             className={`absolute ${POSITION_STYLES[position]} pointer-events-none select-none`}
-            style={{ fontSize: emojiSize }}
-            role="img"
-            aria-label={itemId}
           >
-            {emoji}
-          </span>
+            {image ? (
+              <img
+                src={image}
+                alt={itemId}
+                style={{ width: emojiSize * 1.5, height: emojiSize * 1.5 }}
+                className="object-contain"
+              />
+            ) : (
+              <span style={{ fontSize: emojiSize }} role="img" aria-label={itemId}>
+                {emoji}
+              </span>
+            )}
+          </div>
         )
       })}
     </div>
