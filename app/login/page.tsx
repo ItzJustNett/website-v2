@@ -61,9 +61,17 @@ export default function LoginPage() {
         registerData.email
       )
       if (result.success) {
-        success("Реєстрація успішна! Будь ласка, увійдіть.")
-        setActiveTab("login")
-        setLoginData({ username: registerData.username, password: "" })
+        // Auto-login after successful registration
+        const loginResult = await login(registerData.username, registerData.password)
+        if (loginResult.success) {
+          success("Реєстрація успішна!")
+          router.push("/setup")
+        } else {
+          // Login failed after register - fall back to manual login
+          success("Реєстрація успішна! Будь ласка, увійдіть.")
+          setActiveTab("login")
+          setLoginData({ username: registerData.username, password: "" })
+        }
       } else {
         showError(result.error || "Помилка реєстрації")
       }

@@ -10,6 +10,7 @@ interface ProfileContextType {
   grade: number | null
   catId: number
   equippedItems: string[]
+  isProfileLoaded: boolean
   refreshProfile: () => Promise<void>
   updateMeowcoins: (coins: number) => void
 }
@@ -23,6 +24,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [grade, setGrade] = useState<number | null>(null)
   const [catId, setCatId] = useState(0)
   const [equippedItems, setEquippedItems] = useState<string[]>([])
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false)
 
   const refreshProfile = async () => {
     try {
@@ -35,6 +37,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setEquippedItems(profile.equipped_items || [])
     } catch (err) {
       console.error("Error fetching profile:", err)
+    } finally {
+      setIsProfileLoaded(true)
     }
   }
 
@@ -56,6 +60,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         grade,
         catId,
         equippedItems,
+        isProfileLoaded,
         refreshProfile,
         updateMeowcoins,
       }}
