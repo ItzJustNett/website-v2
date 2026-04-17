@@ -131,6 +131,9 @@ export default function AIFeaturesPage() {
     }
   }
 
+  const sortedTests = [...savedTests].sort((a, b) => Number(b.is_favorite) - Number(a.is_favorite))
+  const sortedSummaries = [...savedSummaries].sort((a, b) => Number(b.is_favorite) - Number(a.is_favorite))
+
   const handleViewTest = async (test: SavedTest) => {
     if (test.lesson_string_id) {
       router.push(`/lessons/${test.lesson_string_id}?testId=${test.id}`)
@@ -200,7 +203,7 @@ export default function AIFeaturesPage() {
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {savedTests.map((test, index) => (
+                {sortedTests.map((test, index) => (
                   <motion.div
                     key={test.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -280,7 +283,7 @@ export default function AIFeaturesPage() {
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {savedSummaries.map((summary, index) => (
+                {sortedSummaries.map((summary, index) => (
                   <motion.div
                     key={summary.id}
                     initial={{ opacity: 0, y: 20 }}
