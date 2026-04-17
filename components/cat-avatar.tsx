@@ -44,6 +44,13 @@ const ITEM_IMAGES: Record<string, string> = {
   sunglasses: "/sunglasses.png",
 }
 
+// Per-cat style overrides for image items: [catId][itemId] → { scale, offsetY }
+const IMAGE_CAT_OVERRIDES: Record<number, Record<string, { scale: number; offsetY: number }>> = {
+  2: { // black cat
+    sunglasses: { scale: 3, offsetY: -30 },
+  },
+}
+
 const ITEM_EMOJIS: Record<string, string> = {
   cap: "\u{1F9E2}",
   moustache: "\u{1F978}",
@@ -106,14 +113,20 @@ export function CatAvatar({ catId, equippedItems = [], size = 192 }: CatAvatarPr
             key={itemId}
             className={`absolute ${POSITION_STYLES[position]} pointer-events-none select-none`}
           >
-            {image ? (
-              <img
-                src={image}
-                alt={itemId}
-                style={{ width: emojiSize * 1.5, height: emojiSize * 1.5 }}
-                className="object-contain"
-              />
-            ) : (
+            {image ? (() => {
+              const overrides = IMAGE_CAT_OVERRIDES[catId]?.[itemId]
+              const scale = overrides?.scale ?? 1
+              const offsetY = overrides?.offsetY ?? 0
+              const imgSize = emojiSize * 1.5 * scale
+              return (
+                <img
+                  src={image}
+                  alt={itemId}
+                  style={{ width: imgSize, height: imgSize, marginTop: offsetY }}
+                  className="object-contain"
+                />
+              )
+            })() : (
               <span style={{ fontSize: emojiSize }} role="img" aria-label={itemId}>
                 {emoji}
               </span>
