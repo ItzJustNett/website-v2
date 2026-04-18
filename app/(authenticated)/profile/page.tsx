@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { CatAvatar } from "@/components/cat-avatar"
+import { useProfile } from "@/contexts/profile-context"
 
 interface UserProfile {
   user_id: string
@@ -31,6 +32,7 @@ interface UserProfile {
 export default function ProfilePage() {
   const { user, logout } = useAuth()
   const { error: showError } = useNotification()
+  const { catId, equippedItems } = useProfile()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -93,9 +95,9 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="flex items-center gap-8">
           <CatAvatar
-            catId={profile?.cat_id ?? 0}
-            equippedItems={profile?.equipped_items || []}
-            size={128}
+            catId={catId}
+            equippedItems={equippedItems}
+            size={192}
           />
           <div>
             <h1 className="text-5xl font-serif font-bold mb-3">
