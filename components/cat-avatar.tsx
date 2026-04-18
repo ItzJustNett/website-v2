@@ -51,17 +51,17 @@ const IMAGE_CAT_OVERRIDES: Record<number, Record<string, { scale: number; offset
   0: { // orange cat
     sunglasses: { scale: 3, offsetY: -87, offsetX: -2, rotate: 6 },
     crown: { scale: 2.5, offsetY: -70, offsetX: -2 },
-    scarf: { scale: 2.5, offsetY: -15, offsetX: -2 },
+    scarf: { scale: 2.5, offsetY: 45, offsetX: -2 },
   },
   1: { // gray cat
     sunglasses: { scale: 3, offsetY: -90, offsetX: 0 },
     crown: { scale: 2.5, offsetY: -73, offsetX: 0 },
-    scarf: { scale: 2.5, offsetY: -15, offsetX: 0 },
+    scarf: { scale: 2.5, offsetY: 45, offsetX: 0 },
   },
   2: { // black cat
     sunglasses: { scale: 3, offsetY: -90, offsetX: -2 },
     crown: { scale: 2.5, offsetY: -73, offsetX: -2 },
-    scarf: { scale: 2.5, offsetY: -15, offsetX: -2 },
+    scarf: { scale: 2.5, offsetY: 45, offsetX: -2 },
   },
 }
 
@@ -138,7 +138,7 @@ export function CatAvatar({ catId, equippedItems = [], size = 192 }: CatAvatarPr
                 <img
                   src={image}
                   alt={itemId}
-                  style={{ width: imgSize, height: imgSize, marginTop: offsetY, marginLeft: offsetX, transform: rotate ? `rotate(${rotate}deg)` : undefined }}
+                  style={{ width: imgSize, height: imgSize, marginLeft: offsetX, transform: `translateY(${offsetY}px)${rotate ? ` rotate(${rotate}deg)` : ''}` }}
                   className="object-contain"
                 />
               )
