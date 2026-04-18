@@ -51,17 +51,17 @@ const IMAGE_CAT_OVERRIDES: Record<number, Record<string, { scale: number; offset
   0: { // orange cat
     sunglasses: { scale: 3, offsetY: -87, offsetX: -2, rotate: 6 },
     crown: { scale: 2.5, offsetY: -70, offsetX: -2 },
-    scarf: { scale: 2.5, offsetY: 105, offsetX: -2 },
+    scarf: { scale: 2.5, offsetY: -15, offsetX: -2 },
   },
   1: { // gray cat
     sunglasses: { scale: 3, offsetY: -90, offsetX: 0 },
     crown: { scale: 2.5, offsetY: -73, offsetX: 0 },
-    scarf: { scale: 2.5, offsetY: 105, offsetX: 0 },
+    scarf: { scale: 2.5, offsetY: -15, offsetX: 0 },
   },
   2: { // black cat
     sunglasses: { scale: 3, offsetY: -90, offsetX: -2 },
     crown: { scale: 2.5, offsetY: -73, offsetX: -2 },
-    scarf: { scale: 2.5, offsetY: 105, offsetX: -2 },
+    scarf: { scale: 2.5, offsetY: -15, offsetX: -2 },
   },
 }
 
