@@ -30,6 +30,7 @@ interface Profile {
 const ITEM_IMAGES: Record<string, string> = {
   "sunglasses": "/sunglasses.png",
   "crown": "/crown.png",
+  "scarf": "/scarf.png",
 }
 
 const ITEM_EMOJIS: Record<string, string> = {
