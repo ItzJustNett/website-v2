@@ -34,31 +34,9 @@ const ITEM_IMAGES: Record<string, string> = {
 }
 
 const ITEM_EMOJIS: Record<string, string> = {
-  "cap": "🧢",
-  "moustache": "🥸",
-  "butterfly": "🦋",
-  "bow-tie": "🎀",
+  "sunglasses": "😎",
   "crown": "👑",
-  "glasses": "🤓",
-  "party-hat": "🎉",
   "scarf": "🧣",
-  "bandana": "🏴‍☠️",
-  "flower": "🌸",
-  "bow": "🎀",
-  "top-hat": "🎩",
-  "headphones": "🎧",
-  "wizard-hat": "✨",
-  "pirate-hat": "🏴‍☠️",
-  "santa-hat": "🎅",
-  "chef-hat": "👨‍🍳",
-  "beret": "🎨",
-  "necklace": "💎",
-  "monocle": "🧐",
-  "tie": "👔",
-  "collar": "🔷",
-  "badge": "⭐",
-  "goggles": "🥽",
-  "hat": "🎩"
 }
 
 export default function StorePage() {
