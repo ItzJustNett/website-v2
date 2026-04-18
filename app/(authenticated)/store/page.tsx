@@ -11,6 +11,7 @@ import { Store, Coins, Package, Check } from "lucide-react"
 import Image from "next/image"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useProfile } from "@/contexts/profile-context"
 
 interface StoreItem {
   id: string
@@ -67,6 +68,7 @@ export default function StorePage() {
   const [equippingItemId, setEquippingItemId] = useState<string | null>(null)
 
   const { success: showSuccess, error: showError } = useNotification()
+  const { refreshProfile } = useProfile()
 
   useEffect(() => {
     fetchData()
@@ -110,6 +112,7 @@ export default function StorePage() {
 
       showSuccess("Предмет куплено!")
       await fetchData()
+      refreshProfile()
     } catch (err) {
       showError("Не вдалося купити предмет")
     } finally {
@@ -124,6 +127,7 @@ export default function StorePage() {
 
       showSuccess("Предмет екіпіровано!")
       await fetchData()
+      refreshProfile()
     } catch (err) {
       showError("Не вдалося екіпірувати предмет")
     } finally {
@@ -138,6 +142,7 @@ export default function StorePage() {
 
       showSuccess("Предмет знято!")
       await fetchData()
+      refreshProfile()
     } catch (err) {
       showError("Не вдалося зняти предмет")
     } finally {
