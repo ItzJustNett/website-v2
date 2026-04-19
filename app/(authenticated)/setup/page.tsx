@@ -9,6 +9,7 @@ import { motion } from "framer-motion"
 import { GraduationCap, Cat } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useProfile } from "@/contexts/profile-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
 const CATS = [
@@ -23,6 +24,7 @@ export default function SetupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { success: showSuccess, error: showError } = useNotification()
+  const { refreshProfile } = useProfile()
 
   const handleComplete = async () => {
     if (!selectedGrade) {
@@ -42,6 +44,7 @@ export default function SetupPage() {
         cat_id: selectedCat
       })
 
+      await refreshProfile()
       showSuccess("Налаштування завершено!")
       router.push("/lessons")
     } catch (err) {
