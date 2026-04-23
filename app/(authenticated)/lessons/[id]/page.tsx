@@ -461,7 +461,16 @@ export default function LessonDetailPage() {
               onClick={handleCreateTest}
               disabled={isCreatingTest}
             >
-              <Zap className="w-4 h-4" />
+              {isCreatingTest ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Zap className="w-4 h-4" />
+                </motion.div>
+              ) : (
+                <Zap className="w-4 h-4" />
+              )}
               <span className="text-sm font-medium">
                 {isCreatingTest ? "Генерація..." : "Згенерувати тест"}
               </span>

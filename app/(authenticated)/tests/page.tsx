@@ -295,7 +295,19 @@ export default function TestsPage() {
                           className="w-full"
                           glow
                         >
-                          {creatingTest === lesson.id ? "Створення тесту..." : "Створити та розпочати тест"}
+                          {creatingTest === lesson.id ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              >
+                                <Zap className="w-4 h-4" />
+                              </motion.div>
+                              Створення тесту...
+                            </span>
+                          ) : (
+                            "Створити та розпочати тест"
+                          )}
                         </ButtonEnhanced>
                       </motion.div>
                     </GlassCard>
