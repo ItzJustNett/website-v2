@@ -7,7 +7,8 @@ import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { ErrorState } from "@/components/immersive/error-state"
-import { motion } from "framer-motion"
+import { TestGenerationLoader } from "@/components/immersive/test-generation-loader"
+import { motion, AnimatePresence } from "framer-motion"
 import { BookOpen, Play, Send, Zap, ChevronUp, ChevronDown } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { fetchWithAuth } from "@/lib/api"
@@ -483,8 +484,15 @@ export default function LessonDetailPage() {
         {/* Content area */}
         <div className="p-6 space-y-4">
 
+          {/* Test Generation Loading Animation */}
+          <AnimatePresence>
+            {isCreatingTest && (
+              <TestGenerationLoader />
+            )}
+          </AnimatePresence>
+
           {/* Test Section */}
-          {test && (
+          {test && !isCreatingTest && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

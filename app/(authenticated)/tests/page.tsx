@@ -11,6 +11,8 @@ import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
+import { TestGenerationLoader } from "@/components/immersive/test-generation-loader"
+import { AnimatePresence } from "framer-motion"
 
 interface Lesson {
   id: string
@@ -242,6 +244,14 @@ export default function TestsPage() {
                 Виберіть урок, щоб створити та пройти тест. Тести автоматично зберігаються у вашому профілі!
               </p>
             </div>
+
+            <AnimatePresence>
+              {creatingTest && (
+                <div className="mb-6">
+                  <TestGenerationLoader />
+                </div>
+              )}
+            </AnimatePresence>
 
             {isLoading ? (
               <SkeletonLoader type="card" count={3} />
