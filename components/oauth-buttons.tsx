@@ -5,7 +5,7 @@ import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
 import { useNotification } from "@/contexts/notification-context"
 import { useRouter } from "next/navigation"
 
-const API_URL = "https://api.xoperr.dev"
+const API_URL = (process.env.NEXT_PUBLIC_API_BASE ?? "https://api.xoperr.dev/api").replace(/\/api$/, "")
 
 export function OAuthButtons() {
   const [isLoading, setIsLoading] = useState<string | null>(null)
