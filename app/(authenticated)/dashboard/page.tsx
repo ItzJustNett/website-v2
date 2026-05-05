@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/auth-context"
 import { useNotification } from "@/contexts/notification-context"
+import { useLanguage } from "@/contexts/language-context"
 import { PageTransition } from "@/components/page-transition"
 import { EditorialCard } from "@/components/immersive/editorial-card"
 import { EditorialProgress } from "@/components/immersive/editorial-progress"
@@ -34,6 +35,7 @@ interface ProfileData {
 export default function DashboardPage() {
   const { user } = useAuth()
   const { error: showError } = useNotification()
+  const { t } = useLanguage()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -57,14 +59,14 @@ export default function DashboardPage() {
           return
         }
 
-        showError("Не вдалося завантажити дані панелі")
+        showError(t("dashboard.loadError"))
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchData()
-  }, [showError])
+  }, [showError, t])
 
   if (isLoading) {
     return (
@@ -91,22 +93,22 @@ export default function DashboardPage() {
 
   const quickActions = [
     {
-      title: "Розпочати урок",
+      title: t("dashboard.startLesson"),
       href: "/lessons",
       icon: BookOpen,
     },
     {
-      title: "Пройти тест",
+      title: t("dashboard.takeTest"),
       href: "/tests",
       icon: Zap,
     },
     {
-      title: "Відвідати магазин",
+      title: t("dashboard.visitStore"),
       href: "/store",
       icon: ShoppingBag,
     },
     {
-      title: "AI функції",
+      title: t("dashboard.aiFeatures"),
       href: "/ai-features",
       icon: Brain,
     },
@@ -122,43 +124,43 @@ export default function DashboardPage() {
       >
         <div>
           <h1 className="text-5xl font-serif font-bold mb-4">
-            Вітаємо, {user?.username}
+            {t("dashboard.welcome", { username: user?.username || "" })}
           </h1>
           <p className="text-lg text-muted-foreground font-sans">
             {stats.streak > 0
-              ? `У вас серія ${stats.streak} днів. Продовжуйте!`
-              : "Розпочніть свою навчальну подорож сьогодні."}
+              ? t("dashboard.streakMessage", { streak: stats.streak })
+              : t("dashboard.startJourney")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <EditorialStat value={stats.streak} label="Днів підряд" size="lg" />
-          <EditorialStat value={stats.lessonsCompleted} label="Уроків виконано" size="lg" />
-          <EditorialStat value={stats.testsCompleted} label="Тестів здано" size="lg" />
-          <EditorialStat value={`Рів ${stats.level}`} label="Поточний рівень" size="lg" />
+          <EditorialStat value={stats.streak} label={t("dashboard.daysStreak")} size="lg" />
+          <EditorialStat value={stats.lessonsCompleted} label={t("dashboard.lessonsCompleted")} size="lg" />
+          <EditorialStat value={stats.testsCompleted} label={t("dashboard.testsPassed")} size="lg" />
+          <EditorialStat value={t("dashboard.levelPrefix", { level: stats.level })} label={t("dashboard.currentLevel")} size="lg" />
         </div>
 
         <div className="editorial-divider" />
 
         <div>
-          <h2 className="text-3xl font-serif font-bold mb-8">Прогрес</h2>
+          <h2 className="text-3xl font-serif font-bold mb-8">{t("dashboard.progress")}</h2>
           <div className="space-y-6">
             <EditorialProgress
               value={stats.lessonsCompleted}
               max={100}
-              label="Уроків виконано"
+              label={t("dashboard.lessonsCompleted")}
               showPercentage={false}
             />
             <EditorialProgress
               value={stats.testsCompleted}
               max={50}
-              label="Тестів виконано"
+              label={t("dashboard.testsCompleted")}
               showPercentage={false}
             />
             <EditorialProgress
               value={stats.currentXP}
               max={stats.maxXP}
-              label={`Прогрес рівня ${stats.level}`}
+              label={t("dashboard.levelProgress", { level: stats.level })}
               showPercentage={true}
             />
           </div>
@@ -170,19 +172,19 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             <div>
               <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
-                Доступно монет
+                {t("dashboard.coinsAvailable")}
               </p>
               <p className="text-4xl font-serif font-bold">{stats.coins}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
-                Поточний рівень
+                {t("dashboard.currentLevel")}
               </p>
               <p className="text-4xl font-serif font-bold">{stats.level}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground font-sans uppercase tracking-wide mb-2">
-                Загалом XP
+                {t("dashboard.totalXP")}
               </p>
               <p className="text-4xl font-serif font-bold">{stats.currentXP}</p>
             </div>
@@ -192,7 +194,7 @@ export default function DashboardPage() {
         <div className="editorial-divider" />
 
         <div>
-          <h2 className="text-3xl font-serif font-bold mb-8">Дії</h2>
+          <h2 className="text-3xl font-serif font-bold mb-8">{t("dashboard.actions")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {quickActions.map((action) => {
               const Icon = action.icon

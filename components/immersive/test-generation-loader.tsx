@@ -3,23 +3,25 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { useEffect, useState } from "react"
 import { Zap, Brain, FileQuestion, CheckCircle2 } from "lucide-react"
-
-const steps = [
-  { icon: Brain, label: "Аналіз матеріалу уроку...", color: "text-purple-500" },
-  { icon: FileQuestion, label: "Створення питань...", color: "text-blue-500" },
-  { icon: CheckCircle2, label: "Генерація варіантів відповідей...", color: "text-emerald-500" },
-  { icon: Zap, label: "Фінальна перевірка...", color: "text-yellow-500" },
-]
+import { useLanguage } from "@/contexts/language-context"
 
 export function TestGenerationLoader() {
   const [currentStep, setCurrentStep] = useState(0)
+  const { t } = useLanguage()
+
+  const steps = [
+    { icon: Brain, label: t("testLoader.step1"), color: "text-purple-500" },
+    { icon: FileQuestion, label: t("testLoader.step2"), color: "text-blue-500" },
+    { icon: CheckCircle2, label: t("testLoader.step3"), color: "text-emerald-500" },
+    { icon: Zap, label: t("testLoader.step4"), color: "text-yellow-500" },
+  ]
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length)
     }, 2800)
     return () => clearInterval(interval)
-  }, [])
+  }, [steps.length])
 
   return (
     <motion.div
@@ -82,8 +84,8 @@ export function TestGenerationLoader() {
 
         {/* Title */}
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-1">AI генерує тест</h3>
-          <p className="text-sm text-muted-foreground">Це може зайняти кілька секунд</p>
+          <h3 className="text-lg font-semibold mb-1">{t("testLoader.title")}</h3>
+          <p className="text-sm text-muted-foreground">{t("testLoader.subtitle")}</p>
         </div>
 
         {/* Steps */}

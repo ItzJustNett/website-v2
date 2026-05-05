@@ -9,6 +9,7 @@ import { motion } from "framer-motion"
 import { Brain, Zap, BookOpen, Clock, Trash2, Star, FileText } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useLanguage } from "@/contexts/language-context"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
 
@@ -44,6 +45,7 @@ export default function AIFeaturesPage() {
   const [isTestsLoading, setIsTestsLoading] = useState(true)
   const [isSummariesLoading, setIsSummariesLoading] = useState(true)
   const { error: showError, success: showSuccess } = useNotification()
+  const { t } = useLanguage()
 
   useEffect(() => {
     const fetchSavedTests = async () => {
@@ -52,7 +54,7 @@ export default function AIFeaturesPage() {
         const data = await api.get("/saved-tests")
         setSavedTests(Array.isArray(data) ? data : [])
       } catch {
-        showError("Не вдалося завантажити збережені тести")
+        showError(t("aiFeatures.loadTestsError"))
         setSavedTests([])
       } finally {
         setIsTestsLoading(false)
@@ -60,7 +62,7 @@ export default function AIFeaturesPage() {
     }
 
     fetchSavedTests()
-  }, [showError])
+  }, [showError, t])
 
   useEffect(() => {
     const fetchSavedSummaries = async () => {
@@ -69,7 +71,7 @@ export default function AIFeaturesPage() {
         const data = await api.get("/saved-summaries")
         setSavedSummaries(Array.isArray(data) ? data : [])
       } catch {
-        showError("Не вдалося завантажити збережені конспекти")
+        showError(t("aiFeatures.loadSummariesError"))
         setSavedSummaries([])
       } finally {
         setIsSummariesLoading(false)
@@ -77,57 +79,57 @@ export default function AIFeaturesPage() {
     }
 
     fetchSavedSummaries()
-  }, [showError])
+  }, [showError, t])
 
   const handleDeleteTest = async (testId: number) => {
-    if (!confirm("Ви впевнені, що хочете видалити цей тест?")) return
+    if (!confirm(t("aiFeatures.deleteTestConfirm"))) return
 
     try {
       await api.delete(`/saved-tests/${testId}`)
-      showSuccess("Тест успішно видалено")
+      showSuccess(t("aiFeatures.testDeleted"))
       setSavedTests(savedTests.filter((test) => test.id !== testId))
     } catch {
-      showError("Не вдалося видалити тест")
+      showError(t("aiFeatures.testDeleteError"))
     }
   }
 
   const handleDeleteSummary = async (summaryId: number) => {
-    if (!confirm("Ви впевнені, що хочете видалити цей конспект?")) return
+    if (!confirm(t("aiFeatures.deleteSummaryConfirm"))) return
 
     try {
       await api.delete(`/saved-summaries/${summaryId}`)
-      showSuccess("Конспект успішно видалено")
+      showSuccess(t("aiFeatures.summaryDeleted"))
       setSavedSummaries(savedSummaries.filter((summary) => summary.id !== summaryId))
     } catch {
-      showError("Не вдалося видалити конспект")
+      showError(t("aiFeatures.summaryDeleteError"))
     }
   }
 
   const handleToggleTestFavorite = async (testId: number) => {
     try {
       const response = await api.put(`/saved-tests/${testId}/favorite`)
-      showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
+      showSuccess(response.is_favorite ? t("tests.addedFavorite") : t("tests.removedFavorite"))
       setSavedTests(
         savedTests.map((test) =>
           test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
         )
       )
     } catch {
-      showError("Не вдалося оновити обране")
+      showError(t("tests.favoriteError"))
     }
   }
 
   const handleToggleSummaryFavorite = async (summaryId: number) => {
     try {
       const response = await api.put(`/saved-summaries/${summaryId}/favorite`)
-      showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
+      showSuccess(response.is_favorite ? t("tests.addedFavorite") : t("tests.removedFavorite"))
       setSavedSummaries(
         savedSummaries.map((summary) =>
           summary.id === summaryId ? { ...summary, is_favorite: response.is_favorite } : summary
         )
       )
     } catch {
-      showError("Не вдалося оновити обране")
+      showError(t("tests.favoriteError"))
     }
   }
 
@@ -138,7 +140,7 @@ export default function AIFeaturesPage() {
     if (test.lesson_string_id) {
       router.push(`/lessons/${test.lesson_string_id}?testId=${test.id}`)
     } else {
-      showError("Неможливо переглянути тест: урок не знайдено")
+      showError(t("aiFeatures.viewTestError"))
     }
   }
 
@@ -146,7 +148,7 @@ export default function AIFeaturesPage() {
     if (summary.lesson_string_id) {
       router.push(`/lessons/${summary.lesson_string_id}?summaryId=${summary.id}`)
     } else {
-      showError("Неможливо переглянути конспект: урок не знайдено")
+      showError(t("aiFeatures.viewSummaryError"))
     }
   }
 
@@ -159,7 +161,7 @@ export default function AIFeaturesPage() {
       >
         <h1 className="text-3xl font-sans font-bold mb-6 flex items-center gap-2">
           <Brain className="w-8 h-8" />
-          AI Функції
+          {t("aiFeatures.title")}
         </h1>
 
         {/* Tabs */}
@@ -171,7 +173,7 @@ export default function AIFeaturesPage() {
               : "bg-foreground/10 text-foreground hover:bg-foreground/15"}
           >
             <Zap className="w-4 h-4 mr-2" />
-            Збережені тести ({savedTests.length})
+            {t("aiFeatures.savedTests")} ({savedTests.length})
           </ButtonEnhanced>
           <ButtonEnhanced
             onClick={() => setActiveTab("summaries")}
@@ -180,7 +182,7 @@ export default function AIFeaturesPage() {
               : "bg-foreground/10 text-foreground hover:bg-foreground/15"}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Збережені конспекти ({savedSummaries.length})
+            {t("aiFeatures.savedSummaries")} ({savedSummaries.length})
           </ButtonEnhanced>
         </div>
 
@@ -189,7 +191,7 @@ export default function AIFeaturesPage() {
           <>
             <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
               <p className="text-sm text-muted-foreground">
-                Всі ваші згенеровані тести автоматично зберігаються тут. Створюйте тести на сторінках уроків.
+                {t("aiFeatures.testsInfo")}
               </p>
             </div>
 
@@ -198,8 +200,8 @@ export default function AIFeaturesPage() {
             ) : savedTests.length === 0 ? (
               <EmptyState
                 icon="📚"
-                title="Немає збережених тестів"
-                description="Перейдіть на сторінку уроку і створіть тест - він автоматично збережеться тут!"
+                title={t("aiFeatures.noTests")}
+                description={t("aiFeatures.noTestsDesc")}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,7 +222,7 @@ export default function AIFeaturesPage() {
                             </p>
                           )}
                           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{test.questions_count} питань</span>
+                            <span>{t("tests.questions", { count: test.questions_count })}</span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {new Date(test.created_at).toLocaleDateString()}
@@ -247,7 +249,7 @@ export default function AIFeaturesPage() {
                           className="flex-1"
                           glow
                         >
-                          Переглянути тест
+                          {t("aiFeatures.viewTest")}
                         </ButtonEnhanced>
                         <ButtonEnhanced
                           onClick={() => handleDeleteTest(test.id)}
@@ -269,7 +271,7 @@ export default function AIFeaturesPage() {
           <>
             <div className="mb-6 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
               <p className="text-sm text-muted-foreground">
-                Всі ваші згенеровані конспекти автоматично зберігаються тут. Створюйте конспекти на сторінках уроків.
+                {t("aiFeatures.summariesInfo")}
               </p>
             </div>
 
@@ -278,8 +280,8 @@ export default function AIFeaturesPage() {
             ) : savedSummaries.length === 0 ? (
               <EmptyState
                 icon="📝"
-                title="Немає збережених конспектів"
-                description="Перейдіть на сторінку уроку і згенеруйте конспект - він автоматично збережеться тут!"
+                title={t("aiFeatures.noSummaries")}
+                description={t("aiFeatures.noSummariesDesc")}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -300,7 +302,7 @@ export default function AIFeaturesPage() {
                             </p>
                           )}
                           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{summary.key_points?.length || 0} ключових моментів</span>
+                            <span>{t("aiFeatures.keyPoints", { count: summary.key_points?.length || 0 })}</span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {new Date(summary.created_at).toLocaleDateString()}
@@ -327,7 +329,7 @@ export default function AIFeaturesPage() {
                           className="flex-1"
                           glow
                         >
-                          Переглянути конспект
+                          {t("aiFeatures.viewSummary")}
                         </ButtonEnhanced>
                         <ButtonEnhanced
                           onClick={() => handleDeleteSummary(summary.id)}

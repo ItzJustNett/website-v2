@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/auth-context"
 import { useNotification } from "@/contexts/notification-context"
+import { useLanguage } from "@/contexts/language-context"
 import { EditorialCard } from "@/components/immersive/editorial-card"
 import { EditorialButton } from "@/components/immersive/editorial-button"
 import { InputEnhanced } from "@/components/immersive/input-enhanced"
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const router = useRouter()
   const { login, register } = useAuth()
   const { success, error: showError } = useNotification()
+  const { t } = useLanguage()
 
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("login")
@@ -34,10 +36,10 @@ export default function LoginPage() {
     try {
       const result = await login(loginData.username, loginData.password)
       if (result.success) {
-        success("Успішний вхід!")
+        success(t("login.successLogin"))
         router.push("/dashboard")
       } else {
-        showError(result.error || "Помилка входу")
+        showError(result.error || t("login.errorLogin"))
       }
     } finally {
       setIsLoading(false)
@@ -49,7 +51,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     if (registerData.password !== registerData.confirmPassword) {
-      showError("Паролі не співпадають")
+      showError(t("login.passwordMismatch"))
       setIsLoading(false)
       return
     }
@@ -64,16 +66,16 @@ export default function LoginPage() {
         // Auto-login after successful registration
         const loginResult = await login(registerData.username, registerData.password)
         if (loginResult.success) {
-          success("Реєстрація успішна!")
+          success(t("login.registerSuccess"))
           router.push("/setup")
         } else {
           // Login failed after register - fall back to manual login
-          success("Реєстрація успішна! Будь ласка, увійдіть.")
+          success(t("login.registerSuccessLogin"))
           setActiveTab("login")
           setLoginData({ username: registerData.username, password: "" })
         }
       } else {
-        showError(result.error || "Помилка реєстрації")
+        showError(result.error || t("login.registerError"))
       }
     } finally {
       setIsLoading(false)
@@ -94,9 +96,9 @@ export default function LoginPage() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-serif font-bold mb-3">PureMind</h1>
+          <h1 className="text-5xl font-serif font-bold mb-3">{t("login.title")}</h1>
           <p className="text-lg text-muted-foreground font-sans">
-            Сфокусоване навчання, мінімум відвернень
+            {t("login.subtitle")}
           </p>
         </div>
 
@@ -104,10 +106,10 @@ export default function LoginPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-white dark:bg-black border border-black dark:border-white rounded-sm">
               <TabsTrigger value="login" className="rounded-none">
-                Вхід
+                {t("login.tabLogin")}
               </TabsTrigger>
               <TabsTrigger value="register" className="rounded-none">
-                Реєстрація
+                {t("login.tabRegister")}
               </TabsTrigger>
             </TabsList>
 
@@ -115,11 +117,11 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-5">
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Ім'я користувача
+                    {t("login.username")}
                   </label>
                   <InputEnhanced
                     type="text"
-                    placeholder="ваше ім'я користувача"
+                    placeholder={t("login.usernamePlaceholder")}
                     value={loginData.username}
                     onChange={(e) =>
                       setLoginData({
@@ -133,11 +135,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Пароль
+                    {t("login.password")}
                   </label>
                   <InputEnhanced
                     type="password"
-                    placeholder="ваш пароль"
+                    placeholder={t("login.passwordPlaceholder")}
                     value={loginData.password}
                     onChange={(e) =>
                       setLoginData({
@@ -154,7 +156,7 @@ export default function LoginPage() {
                   variant="primary"
                   className="w-full"
                 >
-                  {isLoading ? "Вхід..." : "Увійти"}
+                  {isLoading ? t("login.loggingIn") : t("login.loginButton")}
                 </EditorialButton>
               </form>
 
@@ -165,11 +167,11 @@ export default function LoginPage() {
               <form onSubmit={handleRegister} className="space-y-5">
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Ім'я користувача
+                    {t("login.username")}
                   </label>
                   <InputEnhanced
                     type="text"
-                    placeholder="оберіть ім'я користувача"
+                    placeholder={t("login.chooseUsername")}
                     value={registerData.username}
                     onChange={(e) =>
                       setRegisterData({
@@ -183,11 +185,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Електронна пошта
+                    {t("login.email")}
                   </label>
                   <InputEnhanced
                     type="email"
-                    placeholder="ваша електронна пошта"
+                    placeholder={t("login.emailPlaceholder")}
                     value={registerData.email}
                     onChange={(e) =>
                       setRegisterData({
@@ -201,11 +203,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Пароль
+                    {t("login.password")}
                   </label>
                   <InputEnhanced
                     type="password"
-                    placeholder="створіть пароль"
+                    placeholder={t("login.createPassword")}
                     value={registerData.password}
                     onChange={(e) =>
                       setRegisterData({
@@ -219,11 +221,11 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-sans font-medium mb-2">
-                    Підтвердіть пароль
+                    {t("login.confirmPassword")}
                   </label>
                   <InputEnhanced
                     type="password"
-                    placeholder="підтвердіть пароль"
+                    placeholder={t("login.confirmPasswordPlaceholder")}
                     value={registerData.confirmPassword}
                     onChange={(e) =>
                       setRegisterData({
@@ -240,7 +242,7 @@ export default function LoginPage() {
                   variant="primary"
                   className="w-full"
                 >
-                  {isLoading ? "Створення акаунту..." : "Зареєструватися"}
+                  {isLoading ? t("login.registering") : t("login.registerButton")}
                 </EditorialButton>
               </form>
 
@@ -255,7 +257,7 @@ export default function LoginPage() {
           transition={{ duration: 0.4, delay: 0.2 }}
           className="text-center text-xs text-muted-foreground mt-8 font-sans"
         >
-          Входячи, ви погоджуєтесь з нашими Умовами використання та Політикою конфіденційності
+          {t("login.terms")}
         </motion.p>
       </motion.div>
     </motion.div>

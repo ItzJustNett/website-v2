@@ -14,6 +14,7 @@ import { api } from "@/lib/api-client"
 import { fetchWithAuth } from "@/lib/api"
 import { useNotification } from "@/contexts/notification-context"
 import { useProfile } from "@/contexts/profile-context"
+import { useLanguage } from "@/contexts/language-context"
 
 interface Message {
   id: string
@@ -91,18 +92,12 @@ export default function LessonDetailPage() {
   const lessonId = params?.id as string
   const summaryIdParam = searchParams.get("summaryId")
   const testIdParam = searchParams.get("testId")
+  const { t } = useLanguage()
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Привіт! 👋 Я ваш AI асистент. Запитуйте мене про цей урок!",
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isSending, setIsSending] = useState(false)
   const [isCreatingTest, setIsCreatingTest] = useState(false)
@@ -117,6 +112,16 @@ export default function LessonDetailPage() {
   const [isCompletingLesson, setIsCompletingLesson] = useState(false)
   const { error: showError, success: showSuccess } = useNotification()
   const { updateMeowcoins } = useProfile()
+
+  // Initialize AI greeting message
+  useEffect(() => {
+    setMessages([{
+      id: "1",
+      text: t("lessonDetail.aiGreeting"),
+      sender: "ai",
+      timestamp: new Date(),
+    }])
+  }, [t])
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
@@ -136,7 +141,7 @@ export default function LessonDetailPage() {
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Чудове питання! Я зараз вивчаю цю тему. Можете запитувати мене про вміст уроку, і я зроблю все можливе, щоб допомогти! 🤖",
+        text: t("lessonDetail.aiResponse"),
         sender: "ai",
         timestamp: new Date(),
       }
@@ -156,17 +161,17 @@ export default function LessonDetailPage() {
       setTest(testData)
       setTestAnswers({})
       setShowTestResults(false)
-      showSuccess("Тест створено! Прокрутіть вниз, щоб переглянути тест.")
+      showSuccess(t("lessonDetail.testCreated"))
     } catch (err) {
       console.error("Error creating test:", err)
-      showError("Не вдалося створити тест")
+      showError(t("lessonDetail.testCreateError"))
     } finally {
       setIsCreatingTest(false)
     }
   }
 
   const handleCompleteLesson = async () => {
-    console.log('🚀 START BUTTON CLICKED!')
+    console.log('START BUTTON CLICKED!')
     try {
       setIsCompletingLesson(true)
       console.log('[Lesson] Marking lesson as complete:', lessonId)
@@ -179,25 +184,21 @@ export default function LessonDetailPage() {
 
       if (result.success) {
         if (result.already_completed) {
-          // Lesson was already completed
           console.log('[Lesson] Already completed')
         } else {
-          // First time completing this lesson
-          showSuccess(`Урок виконано! +${result.xp_earned} XP, +${result.meowcoins_earned} монет 🎉`)
+          showSuccess(t("lessonDetail.lessonCompleted", { xp: result.xp_earned, coins: result.meowcoins_earned }))
 
-          // Update meowcoins in header
           if (result.total_meowcoins !== undefined) {
             console.log('[Lesson] Updating meowcoins:', result.total_meowcoins)
             updateMeowcoins(result.total_meowcoins)
           }
         }
 
-        // Update lesson to show as completed
         setLesson((prev) => prev ? { ...prev, completed: true } : null)
       }
     } catch (err) {
       console.error("Error completing lesson:", err)
-      showError("Помилка при завершенні уроку")
+      showError(t("lessonDetail.lessonCompleteError"))
     } finally {
       setIsCompletingLesson(false)
     }
@@ -211,15 +212,14 @@ export default function LessonDetailPage() {
       })
 
       setSummary(summaryData)
-      showSuccess("Конспект згенеровано! Прокрутіть вниз, щоб переглянути.")
+      showSuccess(t("lessonDetail.summaryGenerated"))
 
-      // Mark lesson as complete when summary is generated
       if (!lesson?.completed) {
         await handleCompleteLesson()
       }
     } catch (err) {
       console.error("Error generating summary:", err)
-      showError("Не вдалося згенерувати конспект")
+      showError(t("lessonDetail.summaryGenerateError"))
     } finally {
       setIsGeneratingSummary(false)
     }
@@ -238,7 +238,6 @@ export default function LessonDetailPage() {
     try {
       setIsSubmittingTest(true)
 
-      // Calculate score
       let correct = 0
       test.questions.forEach((q, idx) => {
         if (testAnswers[idx] === q.correct_answer) {
@@ -246,7 +245,6 @@ export default function LessonDetailPage() {
         }
       })
 
-      // Submit test results to API
       const result = await fetchWithAuth(`/lessons/${lessonId}/test/submit`, {
         method: "POST",
         body: JSON.stringify({
@@ -263,17 +261,15 @@ export default function LessonDetailPage() {
       })
       setShowTestResults(true)
 
-      // Update meowcoins in header
       if (result.total_meowcoins !== undefined) {
         console.log('[Test] Updating meowcoins to:', result.total_meowcoins)
         updateMeowcoins(result.total_meowcoins)
       }
 
-      showSuccess(`Чудова робота! Ви заробили ${result.meowcoins_earned} монет! 🎉`)
+      showSuccess(t("lessonDetail.testSuccess", { coins: result.meowcoins_earned }))
     } catch (err) {
       console.error("Error submitting test:", err)
-      showError("Не вдалося відправити результати тесту")
-      // Still show results even if submission fails
+      showError(t("lessonDetail.testSubmitError"))
       setShowTestResults(true)
     } finally {
       setIsSubmittingTest(false)
@@ -302,7 +298,7 @@ export default function LessonDetailPage() {
           setSummary({ title: data.title, summary: data.summary, key_points: data.key_points, lesson_id: lessonId })
         } catch (err) {
           console.error("Error loading saved summary:", err)
-          showError("Не вдалося завантажити збережений конспект")
+          showError(t("lessonDetail.savedSummaryError"))
         }
       }
       if (testIdParam) {
@@ -314,13 +310,13 @@ export default function LessonDetailPage() {
           setShowTestResults(false)
         } catch (err) {
           console.error("Error loading saved test:", err)
-          showError("Не вдалося завантажити збережений тест")
+          showError(t("lessonDetail.savedTestError"))
         }
       }
     }
 
     loadSavedContent()
-  }, [isLoading, summaryIdParam, testIdParam, lessonId, showError])
+  }, [isLoading, summaryIdParam, testIdParam, lessonId, showError, t])
 
   useEffect(() => {
     if (!lessonId) return
@@ -357,8 +353,8 @@ export default function LessonDetailPage() {
       <PageTransition>
         <ErrorState
           icon="⚠️"
-          title="Урок не знайдено"
-          message={error || "Урок, який ви шукаєте, не існує."}
+          title={t("lessonDetail.notFoundTitle")}
+          message={error || t("lessonDetail.notFoundMessage")}
         />
       </PageTransition>
     )
@@ -388,12 +384,12 @@ export default function LessonDetailPage() {
               {videoCollapsed ? (
                 <>
                   <ChevronDown className="w-4 h-4" />
-                  Показати відео
+                  {t("lessonDetail.showVideo")}
                 </>
               ) : (
                 <>
                   <ChevronUp className="w-4 h-4" />
-                  Сховати відео
+                  {t("lessonDetail.hideVideo")}
                 </>
               )}
             </button>
@@ -435,7 +431,7 @@ export default function LessonDetailPage() {
               )}
               {lesson.completed && (
                 <span className="text-xs px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 font-medium">
-                  Виконано
+                  {t("lessonDetail.completed")}
                 </span>
               )}
             </div>
@@ -451,7 +447,7 @@ export default function LessonDetailPage() {
             >
               <Play className="w-4 h-4" />
               <span className="text-sm font-medium">
-                {isCompletingLesson ? "..." : lesson?.completed ? "Виконано" : "Почати урок"}
+                {isCompletingLesson ? "..." : lesson?.completed ? t("lessonDetail.completed") : t("lessonDetail.startLesson")}
               </span>
             </ButtonEnhanced>
 
@@ -472,7 +468,7 @@ export default function LessonDetailPage() {
                 <Zap className="w-4 h-4" />
               )}
               <span className="text-sm font-medium">
-                {isCreatingTest ? "Генерація..." : "Згенерувати тест"}
+                {isCreatingTest ? t("lessonDetail.generating") : t("lessonDetail.generateTest")}
               </span>
             </ButtonEnhanced>
 
@@ -484,7 +480,7 @@ export default function LessonDetailPage() {
             >
               <BookOpen className="w-4 h-4" />
               <span className="text-sm font-medium">
-                {isGeneratingSummary ? "Генерація..." : "Згенерувати конспект"}
+                {isGeneratingSummary ? t("lessonDetail.generating") : t("lessonDetail.generateSummary")}
               </span>
             </ButtonEnhanced>
           </div>
@@ -508,7 +504,7 @@ export default function LessonDetailPage() {
               transition={{ duration: 0.5 }}
             >
               <GlassCard hover={false}>
-                <h2 className="text-2xl font-sans font-bold mb-6">Тест: {test.title}</h2>
+                <h2 className="text-2xl font-sans font-bold mb-6">{t("lessonDetail.testTitle", { title: test.title })}</h2>
 
                 {!showTestResults ? (
                   <div className="space-y-6">
@@ -543,7 +539,7 @@ export default function LessonDetailPage() {
                       glow
                       className="w-full mt-6"
                     >
-                      {isSubmittingTest ? "Відправлення..." : "Відправити тест"}
+                      {isSubmittingTest ? t("lessonDetail.submitting") : t("lessonDetail.submitTest")}
                     </ButtonEnhanced>
                   </div>
                 ) : (
@@ -553,7 +549,7 @@ export default function LessonDetailPage() {
                         {calculateScore()}%
                       </div>
                       <p className="text-muted-foreground mb-4">
-                        Відповіли на {Object.keys(testAnswers).length} з {test.questions.length} питань
+                        {t("lessonDetail.answeredOf", { answered: Object.keys(testAnswers).length, total: test.questions.length })}
                       </p>
 
                       {/* Rewards Display */}
@@ -562,14 +558,14 @@ export default function LessonDetailPage() {
                           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                             <span className="text-2xl">🪙</span>
                             <div>
-                              <div className="text-sm text-muted-foreground">Зароблено монет</div>
+                              <div className="text-sm text-muted-foreground">{t("lessonDetail.coinsEarned")}</div>
                               <div className="text-xl font-bold text-yellow-500">+{testRewards.meowcoins_earned}</div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
                             <span className="text-2xl">⚡</span>
                             <div>
-                              <div className="text-sm text-muted-foreground">Зароблено XP</div>
+                              <div className="text-sm text-muted-foreground">{t("lessonDetail.xpEarned")}</div>
                               <div className="text-xl font-bold text-blue-500">+{testRewards.xp_earned}</div>
                             </div>
                           </div>
@@ -593,11 +589,11 @@ export default function LessonDetailPage() {
                             {qIdx + 1}. {question.question}
                           </p>
                           <p className="text-sm mb-2">
-                            Ваша відповідь: {userAnswer !== undefined ? question.options[userAnswer] : "Не відповіли"}
+                            {t("lessonDetail.yourAnswer", { answer: userAnswer !== undefined ? question.options[userAnswer] : t("lessonDetail.notAnswered") })}
                           </p>
                           {!isCorrect && (
                             <p className="text-sm text-green-600 dark:text-green-400">
-                              Правильна відповідь: {question.options[question.correct_answer]}
+                              {t("lessonDetail.correctAnswer", { answer: question.options[question.correct_answer] })}
                             </p>
                           )}
                         </div>
@@ -614,7 +610,7 @@ export default function LessonDetailPage() {
                       variant="outline"
                       className="w-full"
                     >
-                      Пройти тест знову
+                      {t("lessonDetail.retakeTest")}
                     </ButtonEnhanced>
                   </div>
                 )}
@@ -630,7 +626,7 @@ export default function LessonDetailPage() {
               transition={{ duration: 0.5 }}
             >
               <GlassCard hover={false}>
-                <h2 className="text-2xl font-sans font-bold mb-6">Конспект: {summary.title}</h2>
+                <h2 className="text-2xl font-sans font-bold mb-6">{t("lessonDetail.summaryTitle", { title: summary.title })}</h2>
 
                 <div className="space-y-6">
                   {/* Main Summary Text */}
@@ -643,7 +639,7 @@ export default function LessonDetailPage() {
                   {/* Key Points */}
                   {summary.key_points && summary.key_points.length > 0 && (
                     <div className="mt-6">
-                      <h3 className="text-lg font-sans font-semibold mb-4">Ключові моменти:</h3>
+                      <h3 className="text-lg font-sans font-semibold mb-4">{t("lessonDetail.keyPoints")}</h3>
                       <ul className="space-y-2">
                         {summary.key_points.map((point, idx) => (
                           <li
@@ -666,7 +662,7 @@ export default function LessonDetailPage() {
                     variant="outline"
                     className="w-full mt-6"
                   >
-                    Закрити конспект
+                    {t("lessonDetail.closeSummary")}
                   </ButtonEnhanced>
                 </div>
               </GlassCard>
@@ -676,8 +672,8 @@ export default function LessonDetailPage() {
           {/* Empty state when no test or summary is shown */}
           {!test && !summary && (
             <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg font-sans mb-2">Перегляньте відео та скористайтесь AI інструментами</p>
-              <p className="text-sm">Згенеруйте тест або конспект за допомогою кнопок вище</p>
+              <p className="text-lg font-sans mb-2">{t("lessonDetail.emptyTitle")}</p>
+              <p className="text-sm">{t("lessonDetail.emptySubtitle")}</p>
             </div>
           )}
         </div>

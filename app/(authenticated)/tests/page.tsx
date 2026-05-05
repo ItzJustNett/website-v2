@@ -9,6 +9,7 @@ import { motion } from "framer-motion"
 import { Zap, BookOpen, Clock, Trash2, Star, FileText } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useLanguage } from "@/contexts/language-context"
 import { SkeletonLoader } from "@/components/immersive/skeleton-loader"
 import { EmptyState } from "@/components/immersive/empty-state"
 import { TestGenerationLoader } from "@/components/immersive/test-generation-loader"
@@ -23,7 +24,7 @@ interface Lesson {
 interface SavedTest {
   id: number
   lesson_id: number | null
-  lesson_string_id: string | null  // The actual lesson identifier
+  lesson_string_id: string | null
   lesson_title: string | null
   title: string
   questions_count: number
@@ -41,6 +42,7 @@ export default function TestsPage() {
   const [isSavedTestsLoading, setIsSavedTestsLoading] = useState(true)
   const [creatingTest, setCreatingTest] = useState<string | null>(null)
   const { error: showError, success: showSuccess } = useNotification()
+  const { t } = useLanguage()
 
   useEffect(() => {
     const fetchLessons = async () => {
@@ -52,7 +54,7 @@ export default function TestsPage() {
           : (data?.lessons || data?.data || data?.items || [])
         setLessons(lessons)
       } catch {
-        showError("Не вдалося завантажити уроки")
+        showError(t("tests.loadError"))
         setLessons([])
       } finally {
         setIsLoading(false)
@@ -60,7 +62,7 @@ export default function TestsPage() {
     }
 
     fetchLessons()
-  }, [showError])
+  }, [showError, t])
 
   useEffect(() => {
     const fetchSavedTests = async () => {
@@ -69,7 +71,7 @@ export default function TestsPage() {
         const data = await api.get("/saved-tests")
         setSavedTests(Array.isArray(data) ? data : [])
       } catch {
-        showError("Не вдалося завантажити збережені тести")
+        showError(t("tests.loadSavedError"))
         setSavedTests([])
       } finally {
         setIsSavedTestsLoading(false)
@@ -77,47 +79,47 @@ export default function TestsPage() {
     }
 
     fetchSavedTests()
-  }, [showError])
+  }, [showError, t])
 
   const handleCreateTest = async (lessonId: string) => {
     try {
       setCreatingTest(lessonId)
       await api.get(`/lessons/${lessonId}/test`)
-      showSuccess("Тест створено та збережено! Відкриття уроку...")
+      showSuccess(t("tests.createdSuccess"))
       // Refresh saved tests
       const data = await api.get("/saved-tests")
       setSavedTests(Array.isArray(data) ? data : [])
       // Navigate to the lesson detail page to view the test
       router.push(`/lessons/${lessonId}`)
     } catch {
-      showError("Не вдалося створити тест")
+      showError(t("tests.createError"))
       setCreatingTest(null)
     }
   }
 
   const handleDeleteTest = async (testId: number) => {
-    if (!confirm("Ви впевнені, що хочете видалити цей тест?")) return
+    if (!confirm(t("tests.deleteConfirm"))) return
 
     try {
       await api.delete(`/saved-tests/${testId}`)
-      showSuccess("Тест успішно видалено")
+      showSuccess(t("tests.deleted"))
       setSavedTests(savedTests.filter((test) => test.id !== testId))
     } catch {
-      showError("Не вдалося видалити тест")
+      showError(t("tests.deleteError"))
     }
   }
 
   const handleToggleFavorite = async (testId: number) => {
     try {
       const response = await api.put(`/saved-tests/${testId}/favorite`)
-      showSuccess(response.is_favorite ? "Додано до обраного" : "Видалено з обраного")
+      showSuccess(response.is_favorite ? t("tests.addedFavorite") : t("tests.removedFavorite"))
       setSavedTests(
         savedTests.map((test) =>
           test.id === testId ? { ...test, is_favorite: response.is_favorite } : test
         )
       )
     } catch {
-      showError("Не вдалося оновити обране")
+      showError(t("tests.favoriteError"))
     }
   }
 
@@ -125,7 +127,7 @@ export default function TestsPage() {
     if (test.lesson_string_id) {
       router.push(`/lessons/${test.lesson_string_id}?testId=${test.id}`)
     } else {
-      showError("Неможливо переглянути тест: урок не знайдено")
+      showError(t("tests.viewError"))
     }
   }
 
@@ -138,7 +140,7 @@ export default function TestsPage() {
       >
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <Zap className="w-8 h-8" />
-          Тести
+          {t("tests.title")}
         </h1>
 
         <div className="flex gap-2 mb-6">
@@ -147,14 +149,14 @@ export default function TestsPage() {
             className={activeTab === "saved" ? "bg-blue-500" : "bg-gray-500/20"}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Мої збережені тести ({savedTests.length})
+            {t("tests.savedTests")} ({savedTests.length})
           </ButtonEnhanced>
           <ButtonEnhanced
             onClick={() => setActiveTab("create")}
             className={activeTab === "create" ? "bg-blue-500" : "bg-gray-500/20"}
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            Створити новий тест
+            {t("tests.createNew")}
           </ButtonEnhanced>
         </div>
 
@@ -162,7 +164,7 @@ export default function TestsPage() {
           <>
             <div className="mb-6 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
               <p className="text-sm text-muted-foreground">
-                Всі ваші згенеровані тести автоматично зберігаються тут. Вони приватні за замовчуванням.
+                {t("tests.savedInfo")}
               </p>
             </div>
 
@@ -171,8 +173,8 @@ export default function TestsPage() {
             ) : savedTests.length === 0 ? (
               <EmptyState
                 icon="📚"
-                title="Немає збережених тестів"
-                description="Створіть тест у вкладці 'Створити новий тест', і він автоматично збережеться тут!"
+                title={t("tests.noSaved")}
+                description={t("tests.noSavedDesc")}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,7 +195,7 @@ export default function TestsPage() {
                             </p>
                           )}
                           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{test.questions_count} питань</span>
+                            <span>{t("tests.questions", { count: test.questions_count })}</span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {new Date(test.created_at).toLocaleDateString()}
@@ -220,7 +222,7 @@ export default function TestsPage() {
                           className="flex-1"
                           glow
                         >
-                          Переглянути тест
+                          {t("tests.viewTest")}
                         </ButtonEnhanced>
                         <ButtonEnhanced
                           onClick={() => handleDeleteTest(test.id)}
@@ -241,7 +243,7 @@ export default function TestsPage() {
           <>
             <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
               <p className="text-sm text-muted-foreground">
-                Виберіть урок, щоб створити та пройти тест. Тести автоматично зберігаються у вашому профілі!
+                {t("tests.createInfo")}
               </p>
             </div>
 
@@ -258,8 +260,8 @@ export default function TestsPage() {
             ) : lessons.length === 0 ? (
               <EmptyState
                 icon="📝"
-                title="Немає уроків для тестування"
-                description="Спочатку завершіть кілька уроків, потім ви зможете створювати тести для закріплення знань!"
+                title={t("tests.noLessons")}
+                description={t("tests.noLessonsDesc")}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,7 +276,7 @@ export default function TestsPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-2">{lesson.title}</h3>
-                          <p className="text-xs text-muted-foreground">Перевірте свої знання</p>
+                          <p className="text-xs text-muted-foreground">{t("tests.testYourKnowledge")}</p>
                         </div>
                         <BookOpen className="w-5 h-5 text-blue-500 flex-shrink-0 ml-2" />
                       </div>
@@ -303,10 +305,10 @@ export default function TestsPage() {
                               >
                                 <Zap className="w-4 h-4" />
                               </motion.div>
-                              Створення тесту...
+                              {t("tests.creating")}
                             </span>
                           ) : (
-                            "Створити та розпочати тест"
+                            t("tests.createAndStart")
                           )}
                         </ButtonEnhanced>
                       </motion.div>

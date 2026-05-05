@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useProfile } from "@/contexts/profile-context"
+import { useLanguage } from "@/contexts/language-context"
 import {
   Menu,
   Moon,
@@ -38,6 +39,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { meowcoins } = useProfile()
+  const { t } = useLanguage()
   const [pageTitle, setPageTitle] = useState("")
   const [displayCoins, setDisplayCoins] = useState(meowcoins)
   const [coinDiff, setCoinDiff] = useState<number | null>(null)
@@ -105,7 +107,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
               size="icon"
               onClick={() => router.push("/lessons")}
               className="hidden sm:flex"
-              title="Back to lessons"
+              title={t("header.backToLessons")}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -186,7 +188,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
               <DropdownMenuItem asChild>
                 <a href="/settings" className="cursor-pointer">
                   <Settings className="w-4 h-4 mr-2" />
-                  Settings
+                  {t("header.settings")}
                 </a>
               </DropdownMenuItem>
 
@@ -197,7 +199,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
                 className="cursor-pointer font-sans"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                {t("header.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

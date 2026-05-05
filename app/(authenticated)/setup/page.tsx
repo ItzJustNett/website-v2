@@ -10,13 +10,9 @@ import { GraduationCap, Cat } from "lucide-react"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { useProfile } from "@/contexts/profile-context"
+import { useLanguage } from "@/contexts/language-context"
 
 const GRADES = [6, 7, 8, 9, 10, 11]
-const CATS = [
-  { id: 0, name: "Рудий кіт", image: "/orange.png", color: "from-orange-500/20 to-orange-600/10" },
-  { id: 1, name: "Сірий кіт", image: "/gray.png", color: "from-gray-500/20 to-gray-600/10" },
-  { id: 2, name: "Чорний кіт", image: "/black.png", color: "from-purple-500/20 to-purple-600/10" }
-]
 
 export default function SetupPage() {
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null)
@@ -25,15 +21,22 @@ export default function SetupPage() {
   const router = useRouter()
   const { success: showSuccess, error: showError } = useNotification()
   const { refreshProfile } = useProfile()
+  const { t } = useLanguage()
+
+  const CATS = [
+    { id: 0, name: t("setup.orangeCat"), image: "/orange.png", color: "from-orange-500/20 to-orange-600/10" },
+    { id: 1, name: t("setup.grayCat"), image: "/gray.png", color: "from-gray-500/20 to-gray-600/10" },
+    { id: 2, name: t("setup.blackCat"), image: "/black.png", color: "from-purple-500/20 to-purple-600/10" }
+  ]
 
   const handleComplete = async () => {
     if (!selectedGrade) {
-      showError("Будь ласка, виберіть ваш клас")
+      showError(t("setup.selectGradeError"))
       return
     }
 
     if (selectedCat === null) {
-      showError("Будь ласка, виберіть кота")
+      showError(t("setup.selectCatError"))
       return
     }
 
@@ -45,11 +48,11 @@ export default function SetupPage() {
       })
 
       await refreshProfile()
-      showSuccess("Налаштування завершено!")
+      showSuccess(t("setup.success"))
       router.push("/lessons")
     } catch (err) {
       console.error("Setup error:", err)
-      const errorMessage = err instanceof Error ? err.message : "Не вдалося завершити налаштування"
+      const errorMessage = err instanceof Error ? err.message : t("setup.error")
       showError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -72,9 +75,9 @@ export default function SetupPage() {
                   <GraduationCap className="w-12 h-12" />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold mb-2">Вітаємо! 👋</h1>
+              <h1 className="text-3xl font-bold mb-2">{t("setup.welcomeTitle")} 👋</h1>
               <p className="text-muted-foreground">
-                Почнемо з налаштування вашого профілю
+                {t("setup.welcomeSubtitle")}
               </p>
             </div>
 
@@ -82,7 +85,7 @@ export default function SetupPage() {
             <div className="mb-8">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <GraduationCap className="w-5 h-5" />
-                Виберіть ваш клас
+                {t("setup.selectGrade")}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {GRADES.map((grade) => (
@@ -98,7 +101,7 @@ export default function SetupPage() {
                     }`}
                   >
                     <div className="text-3xl font-bold mb-1">{grade}</div>
-                    <div className="text-sm text-muted-foreground">Клас</div>
+                    <div className="text-sm text-muted-foreground">{t("common.grade")}</div>
                   </motion.button>
                 ))}
               </div>
@@ -108,7 +111,7 @@ export default function SetupPage() {
             <div className="mb-8">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Cat className="w-5 h-5" />
-                Виберіть вашого кота
+                {t("setup.selectCat")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {CATS.map((cat) => (
@@ -136,14 +139,14 @@ export default function SetupPage() {
               className="w-full"
               glow
             >
-              {isLoading ? "Завершення..." : "Продовжити"}
+              {isLoading ? t("setup.completing") : t("setup.continue")}
             </ButtonEnhanced>
 
             {(!selectedGrade || selectedCat === null) && (
               <p className="text-center text-sm text-muted-foreground mt-4">
-                {!selectedGrade && !selectedCat ? "Виберіть клас та кота, щоб продовжити" :
-                 !selectedGrade ? "Виберіть клас, щоб продовжити" :
-                 "Виберіть кота, щоб продовжити"}
+                {!selectedGrade && selectedCat === null ? t("setup.selectBoth") :
+                 !selectedGrade ? t("setup.selectGradeHint") :
+                 t("setup.selectCatHint")}
               </p>
             )}
           </GlassCard>

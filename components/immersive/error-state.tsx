@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { AlertCircle, RefreshCw } from "lucide-react"
 import { ButtonEnhanced } from "./button-enhanced"
 import { GlassCard } from "./glass-card"
+import { useLanguage } from "@/contexts/language-context"
 
 interface ErrorStateProps {
   title?: string
@@ -13,11 +14,13 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Oops! Something went wrong",
-  message = "We encountered an error while loading this content.",
+  title,
+  message,
   onRetry,
   icon,
 }: ErrorStateProps) {
+  const { t } = useLanguage()
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -32,13 +35,13 @@ export function ErrorState({
         >
           {icon || <AlertCircle className="w-8 h-8 text-red-500" />}
         </motion.div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-6">{message}</p>
+        <h3 className="text-xl font-semibold mb-2">{title || t("errorState.defaultTitle")}</h3>
+        <p className="text-muted-foreground mb-6">{message || t("errorState.defaultMessage")}</p>
 
         {onRetry && (
           <ButtonEnhanced onClick={onRetry} className="gap-2">
             <RefreshCw className="w-4 h-4" />
-            Try Again
+            {t("errorState.tryAgain")}
           </ButtonEnhanced>
         )}
       </GlassCard>

@@ -11,6 +11,7 @@ import { LogOut } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
+import { useLanguage } from "@/contexts/language-context"
 import { CatAvatar } from "@/components/cat-avatar"
 import { useProfile } from "@/contexts/profile-context"
 
@@ -32,6 +33,7 @@ interface UserProfile {
 export default function ProfilePage() {
   const { user, logout } = useAuth()
   const { error: showError } = useNotification()
+  const { t } = useLanguage()
   const { catId, equippedItems } = useProfile()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -43,29 +45,29 @@ export default function ProfilePage() {
         const data = await api.get("/profiles/me")
         setProfile(data as UserProfile)
       } catch {
-        showError("Не вдалося завантажити профіль")
+        showError(t("profile.loadError"))
       } finally {
         setIsLoading(false)
       }
     }
 
     load()
-  }, [showError])
+  }, [showError, t])
 
   const achievements = [
-    { name: "Перші кроки", icon: "👣", unlocked: profile && profile.lessons_completed > 0 },
+    { name: t("profile.firstSteps"), icon: "👣", unlocked: profile && profile.lessons_completed > 0 },
     {
-      name: "Серія 7 днів",
+      name: t("profile.streak7"),
       icon: "🔥",
       unlocked: profile && profile.streak >= 7,
     },
     {
-      name: "100 уроків",
+      name: t("profile.lessons100"),
       icon: "📚",
       unlocked: profile && profile.lessons_completed >= 100,
     },
     {
-      name: "Експертний рівень",
+      name: t("profile.expertLevel"),
       icon: "🏆",
       unlocked: profile && profile.level >= 10,
     },
@@ -108,7 +110,7 @@ export default function ProfilePage() {
                 <p className="text-sm font-sans text-muted-foreground">{profile.email}</p>
               )}
               <p className="text-sm font-sans text-muted-foreground">
-                Рівень {profile?.level || 0} · Серія {profile?.streak || 0} днів · {profile?.meowcoins || 0} монет
+                {t("profile.info", { level: profile?.level || 0, streak: profile?.streak || 0, coins: profile?.meowcoins || 0 })}
               </p>
             </div>
           </div>
@@ -118,10 +120,10 @@ export default function ProfilePage() {
         {profile && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <EditorialStat value={profile.level} label="Рівень" size="lg" />
-              <EditorialStat value={profile.streak} label="Днів підряд" size="lg" />
-              <EditorialStat value={profile.meowcoins} label="Монет" size="lg" />
-              <EditorialStat value={profile.lessons_completed} label="Уроків" size="lg" />
+              <EditorialStat value={profile.level} label={t("profile.levelStat")} size="lg" />
+              <EditorialStat value={profile.streak} label={t("profile.daysStreak")} size="lg" />
+              <EditorialStat value={profile.meowcoins} label={t("profile.coinsStat")} size="lg" />
+              <EditorialStat value={profile.lessons_completed} label={t("profile.lessonsStat")} size="lg" />
             </div>
 
             {/* Divider */}
@@ -129,24 +131,24 @@ export default function ProfilePage() {
 
             {/* Progress Section */}
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-8">Прогрес</h2>
+              <h2 className="text-3xl font-serif font-bold mb-8">{t("profile.progress")}</h2>
               <div className="space-y-8">
                 <EditorialProgress
                   value={profile.lessons_completed}
                   max={100}
-                  label="Уроків виконано"
+                  label={t("profile.lessonsCompleted")}
                   showPercentage={false}
                 />
                 <EditorialProgress
                   value={profile.tests_completed}
                   max={50}
-                  label="Тестів виконано"
+                  label={t("profile.testsCompleted")}
                   showPercentage={false}
                 />
                 <EditorialProgress
                   value={profile.xp}
                   max={profile.max_xp}
-                  label={`Досвід рівня ${profile.level}`}
+                  label={t("profile.levelXP", { level: profile.level })}
                   showPercentage={true}
                 />
               </div>
@@ -157,7 +159,7 @@ export default function ProfilePage() {
 
             {/* Achievements */}
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-8">Досягнення</h2>
+              <h2 className="text-3xl font-serif font-bold mb-8">{t("profile.achievements")}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {achievements.map((achievement, index) => (
                   <EditorialCard
@@ -169,7 +171,7 @@ export default function ProfilePage() {
                       <p className="text-sm font-sans font-medium">{achievement.name}</p>
                       {achievement.unlocked && (
                         <p className="text-xs font-sans text-muted-foreground mt-2">
-                          Відкрито
+                          {t("profile.unlocked")}
                         </p>
                       )}
                     </div>
@@ -183,19 +185,19 @@ export default function ProfilePage() {
 
             {/* Settings Section */}
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-8">Налаштування</h2>
+              <h2 className="text-3xl font-serif font-bold mb-8">{t("profile.settings")}</h2>
               <EditorialCard>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between pb-6 border-b border-black dark:border-white">
-                    <span className="font-sans font-medium">Тема</span>
-                    <span className="text-sm text-muted-foreground">Системна</span>
+                    <span className="font-sans font-medium">{t("profile.theme")}</span>
+                    <span className="text-sm text-muted-foreground">{t("profile.themeSystem")}</span>
                   </div>
                   <div className="flex items-center justify-between pb-6 border-b border-black dark:border-white">
-                    <span className="font-sans font-medium">Сповіщення</span>
-                    <span className="text-sm text-muted-foreground">Увімкнено</span>
+                    <span className="font-sans font-medium">{t("profile.notifications")}</span>
+                    <span className="text-sm text-muted-foreground">{t("profile.notificationsEnabled")}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-sans font-medium">Акаунт створено</span>
+                    <span className="font-sans font-medium">{t("profile.accountCreated")}</span>
                     <span className="text-sm text-muted-foreground">2024</span>
                   </div>
                 </div>
@@ -213,7 +215,7 @@ export default function ProfilePage() {
                 className="w-full justify-start"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Вийти
+                {t("profile.logout")}
               </EditorialButton>
             </motion.div>
           </>

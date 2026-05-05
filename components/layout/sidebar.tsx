@@ -13,19 +13,21 @@ import {
 } from "lucide-react"
 import { CatAvatar } from "@/components/cat-avatar"
 import { useProfile } from "@/contexts/profile-context"
-
-const navItems = [
-  { href: "/dashboard", label: "Головна", icon: Home },
-  { href: "/lessons", label: "Уроки", icon: BookOpen },
-  { href: "/ai-features", label: "AI Функції", icon: Brain },
-  { href: "/store", label: "Магазин", icon: ShoppingBag },
-  { href: "/profile", label: "Профіль", icon: User },
-  { href: "/settings", label: "Налаштування", icon: Settings },
-]
+import { useLanguage } from "@/contexts/language-context"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { catId, equippedItems } = useProfile()
+  const { t } = useLanguage()
+
+  const navItems = [
+    { href: "/dashboard", label: t("sidebar.home"), icon: Home },
+    { href: "/lessons", label: t("sidebar.lessons"), icon: BookOpen },
+    { href: "/ai-features", label: t("sidebar.aiFunctions"), icon: Brain },
+    { href: "/store", label: t("sidebar.store"), icon: ShoppingBag },
+    { href: "/profile", label: t("sidebar.profile"), icon: User },
+    { href: "/settings", label: t("sidebar.settings"), icon: Settings },
+  ]
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-black dark:border-white bg-white dark:bg-black h-screen sticky top-0">

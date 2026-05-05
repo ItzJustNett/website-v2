@@ -16,6 +16,7 @@ import {
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { useProfile } from "@/contexts/profile-context"
+import { useLanguage } from "@/contexts/language-context"
 import Link from "next/link"
 
 interface Lesson {
@@ -34,22 +35,22 @@ type DifficultyFilter = "all" | string
 type SubjectFilter = "all" | string
 
 const SUBJECT_NAMES: Record<string, string> = {
-  "alhebra-i-pochatky-analizu": "Algebra",
-  "anhliyska-mova": "English",
-  "biolohiya-i-ekolohiya": "Biology",
-  "fizyka": "Physics",
-  "heohrafiya": "Geography",
-  "heometriya": "Geometry",
-  "hromadyanska-osvita": "Civic Education",
-  "istoriya-ukrayiny": "Ukrainian History",
-  "khimiya": "Chemistry",
-  "ukrayinska-literatura": "Ukrainian Literature",
-  "ukrayinska-mova": "Ukrainian Language",
-  "vsesvitnya-istoriya": "World History",
-  "zarubizhna-literatura": "Foreign Literature",
-  "algebra": "Algebra",
-  "angliiska": "English",
-  "biologiya": "Biology"
+  "alhebra-i-pochatky-analizu": "subject.algebra",
+  "anhliyska-mova": "subject.english",
+  "biolohiya-i-ekolohiya": "subject.biology",
+  "fizyka": "subject.physics",
+  "heohrafiya": "subject.geography",
+  "heometriya": "subject.geometry",
+  "hromadyanska-osvita": "subject.civicEducation",
+  "istoriya-ukrayiny": "subject.ukrainianHistory",
+  "khimiya": "subject.chemistry",
+  "ukrayinska-literatura": "subject.ukrainianLiterature",
+  "ukrayinska-mova": "subject.ukrainianLanguage",
+  "vsesvitnya-istoriya": "subject.worldHistory",
+  "zarubizhna-literatura": "subject.foreignLiterature",
+  "algebra": "subject.algebra",
+  "angliiska": "subject.english",
+  "biologiya": "subject.biology"
 }
 
 const SUBJECT_ICONS: Record<string, LucideIcon> = {
@@ -80,6 +81,7 @@ export default function LessonsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>("title")
   const { grade: profileGrade } = useProfile()
+  const { t } = useLanguage()
   const userGrade = profileGrade ? profileGrade.toString() : null
   const [gradeFilter, setGradeFilter] = useState<GradeFilter>(() => userGrade || "all")
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("all")
@@ -103,7 +105,8 @@ export default function LessonsPage() {
   }
 
   const getSubjectName = (subjectKey: string): string => {
-    return SUBJECT_NAMES[subjectKey] || subjectKey
+    const translationKey = SUBJECT_NAMES[subjectKey]
+    return translationKey ? t(translationKey) : subjectKey
   }
 
   const getSubjectIcon = (lesson: Lesson): LucideIcon => {
@@ -115,7 +118,7 @@ export default function LessonsPage() {
     const grades = new Set<string>()
     lessons.forEach(lesson => {
       const grade = extractGrade(lesson)
-      if (grade && grade !== "5") grades.add(grade)  // Exclude grade 5
+      if (grade && grade !== "5") grades.add(grade)
     })
     return Array.from(grades).sort((a, b) => parseInt(a) - parseInt(b))
   }, [lessons])
@@ -129,7 +132,7 @@ export default function LessonsPage() {
     return Array.from(subjects).sort((a, b) =>
       getSubjectName(a).localeCompare(getSubjectName(b))
     )
-  }, [lessons])
+  }, [lessons, t])
 
   const availableDifficulties = useMemo(() => {
     const difficulties = new Set<string>()
@@ -214,7 +217,7 @@ export default function LessonsPage() {
           : (data?.lessons || data?.results || data?.data || data?.items || [])
         setLessons(lessons)
       } catch {
-        showError("Не вдалося завантажити уроки")
+        showError(t("lessons.loadError"))
         setLessons([])
       } finally {
         setIsLoading(false)
@@ -226,7 +229,7 @@ export default function LessonsPage() {
     }, 300)
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery, showError])
+  }, [searchQuery, showError, t])
 
   return (
     <PageTransition>
@@ -238,13 +241,13 @@ export default function LessonsPage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-sans font-bold flex items-center gap-2">
             <BookOpen className="w-8 h-8" />
-            Уроки
+            {t("lessons.title")}
           </h1>
           {isAutoFiltered && userGrade && gradeFilter === userGrade && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
               <Filter className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">
-                Показано уроки {userGrade} класу
+                {t("lessons.showingGrade", { grade: userGrade })}
               </span>
               <button
                 onClick={() => {
@@ -253,7 +256,7 @@ export default function LessonsPage() {
                 }}
                 className="ml-2 text-xs px-2 py-1 rounded bg-background/50 hover:bg-background/80 transition-colors"
               >
-                Показати всі
+                {t("lessons.showAll")}
               </button>
             </div>
           )}
@@ -264,7 +267,7 @@ export default function LessonsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Пошук уроків за назвою..."
+              placeholder={t("lessons.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-10 py-3 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
@@ -287,7 +290,7 @@ export default function LessonsPage() {
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Вигляд картками"
+              title={t("lessons.viewCards")}
             >
               <LayoutGrid className="w-5 h-5" />
             </button>
@@ -298,7 +301,7 @@ export default function LessonsPage() {
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Вигляд списком"
+              title={t("lessons.viewList")}
             >
               <LayoutList className="w-5 h-5" />
             </button>
@@ -307,7 +310,7 @@ export default function LessonsPage() {
 
         {!isLoading && lessons.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-4">
-            
+
             <div className="flex items-center gap-2">
               <ArrowUpDown className="w-4 h-4" />
               <select
@@ -315,13 +318,13 @@ export default function LessonsPage() {
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="title">Сортувати за назвою</option>
-                <option value="xp">Сортувати за XP</option>
-                <option value="recent">Найновіші</option>
+                <option value="title">{t("lessons.sortByTitle")}</option>
+                <option value="xp">{t("lessons.sortByXP")}</option>
+                <option value="recent">{t("lessons.sortByRecent")}</option>
               </select>
             </div>
 
-            
+
             {availableSubjects.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -330,7 +333,7 @@ export default function LessonsPage() {
                   onChange={(e) => setSubjectFilter(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="all">Всі предмети</option>
+                  <option value="all">{t("lessons.allSubjects")}</option>
                   {availableSubjects.map(subject => (
                     <option key={subject} value={subject}>{getSubjectName(subject)}</option>
                   ))}
@@ -338,7 +341,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-            
+
             {availableGrades.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -347,15 +350,15 @@ export default function LessonsPage() {
                   onChange={(e) => setGradeFilter(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="all">Всі класи</option>
+                  <option value="all">{t("lessons.allGrades")}</option>
                   {availableGrades.map(grade => (
-                    <option key={grade} value={grade}>Клас {grade}</option>
+                    <option key={grade} value={grade}>{t("lessons.gradeN", { grade })}</option>
                   ))}
                 </select>
               </div>
             )}
 
-            
+
             {availableDifficulties.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -364,7 +367,7 @@ export default function LessonsPage() {
                   onChange={(e) => setDifficultyFilter(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="all">Всі складності</option>
+                  <option value="all">{t("lessons.allDifficulties")}</option>
                   {availableDifficulties.map(difficulty => (
                     <option key={difficulty} value={difficulty}>{difficulty}</option>
                   ))}
@@ -372,9 +375,9 @@ export default function LessonsPage() {
               </div>
             )}
 
-            
+
             <div className="flex items-center text-sm text-muted-foreground ml-auto">
-              Показано {((currentPage - 1) * LESSONS_PER_PAGE) + 1}-{Math.min(currentPage * LESSONS_PER_PAGE, filteredAndSortedLessons.length)} з {filteredAndSortedLessons.length} уроків
+              {t("lessons.showing", { from: ((currentPage - 1) * LESSONS_PER_PAGE) + 1, to: Math.min(currentPage * LESSONS_PER_PAGE, filteredAndSortedLessons.length), total: filteredAndSortedLessons.length })}
             </div>
           </div>
         )}
@@ -384,14 +387,14 @@ export default function LessonsPage() {
         ) : lessons.length === 0 ? (
           <EmptyState
             icon={searchQuery ? "🔍" : "📚"}
-            title={searchQuery ? "Уроків не знайдено" : "Немає доступних уроків"}
-            description={searchQuery ? `Немає результатів для "${searchQuery}"` : "Повертайтесь незабаром за новим навчальним контентом!"}
+            title={searchQuery ? t("lessons.notFound") : t("lessons.noLessons")}
+            description={searchQuery ? t("lessons.noResults", { query: searchQuery }) : t("lessons.checkBackSoon")}
           />
         ) : filteredAndSortedLessons.length === 0 ? (
           <EmptyState
             icon="🔍"
-            title="Уроків не знайдено"
-            description="Спробуйте змінити фільтри"
+            title={t("lessons.notFound")}
+            description={t("lessons.tryChangeFilters")}
           />
         ) : (
           <>
@@ -410,19 +413,19 @@ export default function LessonsPage() {
                       <Link href={`/lessons/${lesson.id}`}>
                         <GlassCard className="group hover:border-foreground/30 transition-all duration-200">
                           <div className="flex items-center gap-4">
-                            
+
                             <div className="flex-shrink-0">
                               <SubjectIcon className="w-6 h-6" />
                             </div>
 
-                            
+
                             <div className="flex-1 min-w-0">
                               <h3 className="font-sans font-bold text-lg group-hover:underline decoration-2 underline-offset-4 truncate text-foreground">
                                 {lesson.title}
                               </h3>
                             </div>
 
-                            
+
                             <div className="flex items-center gap-4 flex-shrink-0">
                               {lesson.difficulty && (
                                 <span className="text-sm px-3 py-1.5 border-2 border-foreground/20 rounded font-bold">
@@ -460,7 +463,7 @@ export default function LessonsPage() {
                       <Link href={`/lessons/${lesson.id}`}>
                         <GlassCard className="group hover:border-foreground/30 transition-all duration-200 h-full">
                           <div className="flex flex-col h-full">
-                            
+
                             <div className="flex items-start gap-3 mb-4">
                               <div className="flex-shrink-0 p-2 rounded-lg bg-foreground/5">
                                 <SubjectIcon className="w-6 h-6" />
@@ -479,12 +482,12 @@ export default function LessonsPage() {
                               </div>
                             </div>
 
-                            
+
                             <h3 className="font-sans font-bold text-base mb-3 line-clamp-2 group-hover:underline decoration-2 underline-offset-4 text-foreground flex-grow">
                               {lesson.title}
                             </h3>
 
-                            
+
                             <div className="flex justify-end">
                               <span className="text-foreground/60 group-hover:translate-x-1 transition-transform duration-200 font-bold text-xl">
                                 →
@@ -499,7 +502,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-            
+
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <ButtonEnhanced
@@ -507,7 +510,7 @@ export default function LessonsPage() {
                   disabled={currentPage === 1}
                   className="px-4 py-2"
                 >
-                  Назад
+                  {t("common.back")}
                 </ButtonEnhanced>
 
                 <div className="flex items-center gap-2">
@@ -544,7 +547,7 @@ export default function LessonsPage() {
                   disabled={currentPage === totalPages}
                   className="px-4 py-2"
                 >
-                  Далі
+                  {t("common.next")}
                 </ButtonEnhanced>
               </div>
             )}

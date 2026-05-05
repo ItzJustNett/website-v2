@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { GlassCard } from "./glass-card"
+import { useLanguage } from "@/contexts/language-context"
 
 interface EmptyStateProps {
   icon?: string
@@ -12,10 +13,12 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon = "📭",
-  title = "Nothing here yet",
-  description = "Check back soon for new content!",
+  title,
+  description,
   action,
 }: EmptyStateProps) {
+  const { t } = useLanguage()
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -30,8 +33,8 @@ export function EmptyState({
         >
           {icon}
         </motion.div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-6">{description}</p>
+        <h3 className="text-xl font-semibold mb-2">{title || t("emptyState.defaultTitle")}</h3>
+        <p className="text-muted-foreground mb-6">{description || t("emptyState.defaultDescription")}</p>
         {action && <div>{action}</div>}
       </GlassCard>
     </motion.div>

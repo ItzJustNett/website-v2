@@ -12,6 +12,7 @@ import Image from "next/image"
 import { api } from "@/lib/api-client"
 import { useNotification } from "@/contexts/notification-context"
 import { useProfile } from "@/contexts/profile-context"
+import { useLanguage } from "@/contexts/language-context"
 
 interface StoreItem {
   id: string
@@ -48,6 +49,7 @@ export default function StorePage() {
 
   const { success: showSuccess, error: showError } = useNotification()
   const { refreshProfile } = useProfile()
+  const { t } = useLanguage()
 
   useEffect(() => {
     fetchData()
@@ -64,7 +66,6 @@ export default function StorePage() {
       console.log("Store data:", storeData)
       console.log("Profile data:", profileData)
 
-      // Ensure items is always an array
       const storeItems = Array.isArray(storeData?.items) ? storeData.items :
                          Array.isArray(storeData) ? storeData : []
 
@@ -72,8 +73,8 @@ export default function StorePage() {
       setProfile(profileData)
     } catch (err) {
       console.error("Error fetching data:", err)
-      showError("Не вдалося завантажити магазин")
-      setItems([]) // Ensure items is set to empty array on error
+      showError(t("store.loadError"))
+      setItems([])
     } finally {
       setIsLoading(false)
     }
@@ -81,7 +82,7 @@ export default function StorePage() {
 
   const handleBuy = async (itemId: string, price: number) => {
     if (!profile || profile.meowcoins < price) {
-      showError("Недостатньо MeowCoins!")
+      showError(t("store.notEnoughError"))
       return
     }
 
@@ -89,11 +90,11 @@ export default function StorePage() {
       setBuyingItemId(itemId)
       await api.post("/store/buy", { item_id: itemId })
 
-      showSuccess("Предмет куплено!")
+      showSuccess(t("store.buySuccess"))
       await fetchData()
       refreshProfile()
     } catch (err) {
-      showError("Не вдалося купити предмет")
+      showError(t("store.buyError"))
     } finally {
       setBuyingItemId(null)
     }
@@ -104,11 +105,11 @@ export default function StorePage() {
       setEquippingItemId(itemId)
       await api.post("/inventory/equip", { item_id: itemId })
 
-      showSuccess("Предмет екіпіровано!")
+      showSuccess(t("store.equipSuccess"))
       await fetchData()
       refreshProfile()
     } catch (err) {
-      showError("Не вдалося екіпірувати предмет")
+      showError(t("store.equipError"))
     } finally {
       setEquippingItemId(null)
     }
@@ -119,11 +120,11 @@ export default function StorePage() {
       setEquippingItemId(itemId)
       await api.post("/inventory/unequip", { item_id: itemId })
 
-      showSuccess("Предмет знято!")
+      showSuccess(t("store.unequipSuccess"))
       await fetchData()
       refreshProfile()
     } catch (err) {
-      showError("Не вдалося зняти предмет")
+      showError(t("store.unequipError"))
     } finally {
       setEquippingItemId(null)
     }
@@ -138,7 +139,7 @@ export default function StorePage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Store className="w-8 h-8" />
-            Магазин аксесуарів для котів
+            {t("store.title")}
           </h1>
 
           {profile && (
@@ -153,7 +154,7 @@ export default function StorePage() {
         {isLoading ? (
           <SkeletonLoader type="card" count={4} />
         ) : items.length === 0 ? (
-          <EmptyState icon="🏪" title="Магазин порожній" description="Повертайтесь пізніше!" />
+          <EmptyState icon="🏪" title={t("store.empty")} description={t("store.emptyDesc")} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.isArray(items) && items.map((item, index) => {
@@ -196,15 +197,15 @@ export default function StorePage() {
                     <div className="mt-auto">
                       {equipped ? (
                         <ButtonEnhanced onClick={() => handleUnequip(item.item_id)} disabled={equippingItemId === item.item_id} className="w-full" variant="secondary">
-                          <Check className="w-4 h-4 mr-2" />Екіпіровано
+                          <Check className="w-4 h-4 mr-2" />{t("store.equipped")}
                         </ButtonEnhanced>
                       ) : owned ? (
                         <ButtonEnhanced onClick={() => handleEquip(item.item_id)} disabled={equippingItemId === item.item_id} className="w-full">
-                          <Package className="w-4 h-4 mr-2" />Екіпірувати
+                          <Package className="w-4 h-4 mr-2" />{t("store.equip")}
                         </ButtonEnhanced>
                       ) : (
                         <ButtonEnhanced onClick={() => handleBuy(item.item_id, item.price)} disabled={!canAfford || buyingItemId === item.item_id} className="w-full" glow={canAfford}>
-                          {canAfford ? "Купити зараз" : "Недостатньо монет"}
+                          {canAfford ? t("store.buyNow") : t("store.notEnoughCoins")}
                         </ButtonEnhanced>
                       )}
                     </div>
@@ -219,9 +220,9 @@ export default function StorePage() {
           <div className="flex items-start gap-3">
             <Coins className="w-5 h-5 text-yellow-500 mt-1" />
             <div>
-              <h3 className="font-bold mb-1">Як заробити MeowCoins</h3>
+              <h3 className="font-bold mb-1">{t("store.howToEarn")}</h3>
               <p className="text-sm text-muted-foreground">
-                Виконуйте вправи та тести, щоб заробляти MeowCoins. Використовуйте їх, щоб купувати круті аксесуари для вашого кота!
+                {t("store.howToEarnDesc")}
               </p>
             </div>
           </div>
