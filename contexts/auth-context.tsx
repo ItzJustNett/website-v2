@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://api.xoperr.dev/api"
+
 interface User {
   id: string
   username: string
@@ -39,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const res = await fetch("https://api.xoperr.dev/api/auth/login", {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -63,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (username: string, password: string, email: string) => {
     try {
-      const res = await fetch("https://api.xoperr.dev/api/auth/register", {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, email }),
@@ -84,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token")
       if (token) {
-        fetch("https://api.xoperr.dev/api/auth/logout", {
+        fetch(`${API_BASE}/auth/logout`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

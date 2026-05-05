@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { PageTransition } from "@/components/page-transition"
 import { GlassCard } from "@/components/immersive/glass-card"
 import { ButtonEnhanced } from "@/components/immersive/button-enhanced"
@@ -27,6 +27,7 @@ interface Lesson {
   completed?: boolean
   xp_reward?: number
   course_id?: string
+  score?: number
 }
 
 type SortOption = "title" | "xp" | "recent"
@@ -72,7 +73,7 @@ const SUBJECT_ICONS: Record<string, LucideIcon> = {
   "zarubizhna-literatura": Book
 }
 
-const LESSONS_PER_PAGE = 50
+const PAGE_SIZE = 30
 
 type ViewMode = "cards" | "list"
 
@@ -91,6 +92,16 @@ export default function LessonsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("cards")
   const [isAutoFiltered, setIsAutoFiltered] = useState(() => !!userGrade)
   const { error: showError } = useNotification()
+
+  // ── Semantic search state ──────────────────────────────────────────────────
+  const [searchResults,  setSearchResults]  = useState<Lesson[]>([])
+  const [searchOffset,   setSearchOffset]   = useState(0)
+  const [searchHasMore,  setSearchHasMore]  = useState(false)
+  const [searchTotal,    setSearchTotal]    = useState(0)
+  const [isSearching,    setIsSearching]    = useState(false)
+  const [searchWarming,  setSearchWarming]  = useState(false)
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   const extractGrade = (lesson: Lesson): string | null => {
     const courseId = lesson.course_id || lesson.id
@@ -114,11 +125,13 @@ export default function LessonsPage() {
     return subject ? (SUBJECT_ICONS[subject] || BookOpen) : BookOpen
   }
 
+  // ── Derived data for filter dropdowns (from filter-only lesson list) ───────
+
   const availableGrades = useMemo(() => {
     const grades = new Set<string>()
     lessons.forEach(lesson => {
       const grade = extractGrade(lesson)
-      if (grade && grade !== "5") grades.add(grade)
+      if (grade) grades.add(grade)
     })
     return Array.from(grades).sort((a, b) => parseInt(a) - parseInt(b))
   }, [lessons])
@@ -141,6 +154,8 @@ export default function LessonsPage() {
     })
     return Array.from(difficulties)
   }, [lessons])
+
+  // ── Filtered + sorted lessons (filter-only path) ──────────────────────────
 
   const filteredAndSortedLessons = useMemo(() => {
     let filtered = [...lessons]
@@ -184,12 +199,17 @@ export default function LessonsPage() {
     return filtered
   }, [lessons, sortBy, gradeFilter, subjectFilter, difficultyFilter])
 
-  const totalPages = Math.ceil(filteredAndSortedLessons.length / LESSONS_PER_PAGE)
+  const totalPages = Math.ceil(filteredAndSortedLessons.length / PAGE_SIZE)
   const paginatedLessons = useMemo(() => {
-    const startIndex = (currentPage - 1) * LESSONS_PER_PAGE
-    const endIndex = startIndex + LESSONS_PER_PAGE
-    return filteredAndSortedLessons.slice(startIndex, endIndex)
+    const startIndex = (currentPage - 1) * PAGE_SIZE
+    return filteredAndSortedLessons.slice(startIndex, startIndex + PAGE_SIZE)
   }, [filteredAndSortedLessons, currentPage])
+
+  // ── Mode switch ────────────────────────────────────────────────────────────
+  const isSearchMode = searchQuery.trim() !== ""
+  const displayLessons = isSearchMode ? searchResults : paginatedLessons
+
+  // ── Effects ────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (userGrade) {
@@ -200,22 +220,24 @@ export default function LessonsPage() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [gradeFilter, subjectFilter, difficultyFilter, sortBy, searchQuery])
+  }, [gradeFilter, subjectFilter, difficultyFilter, sortBy])
 
+  // Effect 1: filter-only path (fires when filters change, not when search query is active)
   useEffect(() => {
+    if (searchQuery.trim() !== "") return  // semantic effect handles non-empty queries
+
     const fetchLessons = async () => {
       try {
         setIsLoading(true)
-
-        const endpoint = searchQuery.trim()
-          ? `/lessons/search?q=${encodeURIComponent(searchQuery.trim())}`
-          : "/lessons"
-
-        const data = await api.get(endpoint)
-        const lessons = Array.isArray(data)
+        const params = new URLSearchParams()
+        if (gradeFilter   !== "all") params.set("grade",   gradeFilter)
+        if (subjectFilter !== "all") params.set("subject", subjectFilter)
+        const qs = params.toString()
+        const data = await api.get(qs ? `/lessons?${qs}` : "/lessons")
+        const arr = Array.isArray(data)
           ? data
           : (data?.lessons || data?.results || data?.data || data?.items || [])
-        setLessons(lessons)
+        setLessons(arr)
       } catch {
         showError(t("lessons.loadError"))
         setLessons([])
@@ -224,12 +246,96 @@ export default function LessonsPage() {
       }
     }
 
-    const timeoutId = setTimeout(() => {
-      fetchLessons()
-    }, 300)
+    fetchLessons()
+  }, [gradeFilter, subjectFilter, showError])
 
-    return () => clearTimeout(timeoutId)
-  }, [searchQuery, showError, t])
+  // Effect 2: semantic search path (fires when query or filters change)
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      // Query cleared — reset semantic state so filter path takes over
+      setSearchResults([])
+      setSearchOffset(0)
+      setSearchHasMore(false)
+      setSearchWarming(false)
+      return
+    }
+
+    const doSearch = async () => {
+      setIsSearching(true)
+      setSearchOffset(0)
+      try {
+        const params = new URLSearchParams({
+          q:      searchQuery.trim(),
+          limit:  "30",
+          offset: "0",
+        })
+        if (gradeFilter   !== "all") params.set("grade",   gradeFilter)
+        if (subjectFilter !== "all") params.set("subject", subjectFilter)
+
+        const data = await api.get(`/lessons/semantic-search?${params}`)
+        setSearchResults(data.results || [])
+        setSearchTotal(data.total ?? 0)
+        setSearchHasMore(data.has_more ?? false)
+        setSearchWarming(false)
+      } catch (err: any) {
+        const status = err?.status ?? err?.response?.status
+        if (status === 503) {
+          // Model still warming up — fall back to legacy substring search
+          setSearchWarming(true)
+          try {
+            const fallback = await api.get(
+              `/lessons/search?q=${encodeURIComponent(searchQuery.trim())}`
+            )
+            const arr = Array.isArray(fallback)
+              ? fallback
+              : (fallback?.results || fallback?.lessons || [])
+            setSearchResults(arr)
+            setSearchTotal(arr.length)
+            setSearchHasMore(false)
+          } catch {
+            setSearchResults([])
+            setSearchTotal(0)
+          }
+        } else {
+          showError(t("lessons.searchError"))
+          setSearchResults([])
+          setSearchTotal(0)
+        }
+      } finally {
+        setIsSearching(false)
+      }
+    }
+
+    const id = setTimeout(doSearch, 300)
+    return () => clearTimeout(id)
+  }, [searchQuery, gradeFilter, subjectFilter, showError])
+
+  // ── Load More (semantic search pagination) ─────────────────────────────────
+  const loadMoreSearch = useCallback(async () => {
+    if (!searchHasMore || isSearching) return
+    const nextOffset = searchOffset + 30
+    setIsSearching(true)
+    try {
+      const params = new URLSearchParams({
+        q:      searchQuery.trim(),
+        limit:  "30",
+        offset: String(nextOffset),
+      })
+      if (gradeFilter   !== "all") params.set("grade",   gradeFilter)
+      if (subjectFilter !== "all") params.set("subject", subjectFilter)
+
+      const data = await api.get(`/lessons/semantic-search?${params}`)
+      setSearchResults(prev => [...prev, ...(data.results || [])])
+      setSearchOffset(nextOffset)
+      setSearchHasMore(data.has_more ?? false)
+    } catch {
+      showError(t("lessons.loadMoreError"))
+    } finally {
+      setIsSearching(false)
+    }
+  }, [searchHasMore, isSearching, searchOffset, searchQuery, gradeFilter, subjectFilter, showError, t])
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <PageTransition>
@@ -262,6 +368,14 @@ export default function LessonsPage() {
           )}
         </div>
 
+        {/* Warming notice */}
+        {searchWarming && (
+          <div className="mb-2 text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
+            {t("lessons.searchWarming")}
+          </div>
+        )}
+
+        {/* Search + view toggle */}
         <div className="mb-6 flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -308,23 +422,27 @@ export default function LessonsPage() {
           </div>
         </div>
 
+        {/* Filter bar (always visible when we have lessons loaded) */}
         {!isLoading && lessons.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-4">
 
-            <div className="flex items-center gap-2">
-              <ArrowUpDown className="w-4 h-4" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="title">{t("lessons.sortByTitle")}</option>
-                <option value="xp">{t("lessons.sortByXP")}</option>
-                <option value="recent">{t("lessons.sortByRecent")}</option>
-              </select>
-            </div>
+            {/* Sort — only meaningful in filter-only mode */}
+            {!isSearchMode && (
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-4 h-4" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="px-3 py-2 rounded-lg bg-background/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="title">{t("lessons.sortByTitle")}</option>
+                  <option value="xp">{t("lessons.sortByXP")}</option>
+                  <option value="recent">{t("lessons.sortByRecent")}</option>
+                </select>
+              </div>
+            )}
 
-
+            {/* Subject filter */}
             {availableSubjects.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -341,7 +459,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-
+            {/* Grade filter */}
             {availableGrades.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -358,7 +476,7 @@ export default function LessonsPage() {
               </div>
             )}
 
-
+            {/* Difficulty filter */}
             {availableDifficulties.length > 0 && (
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
@@ -375,22 +493,32 @@ export default function LessonsPage() {
               </div>
             )}
 
-
+            {/* Count display */}
             <div className="flex items-center text-sm text-muted-foreground ml-auto">
-              {t("lessons.showing", { from: ((currentPage - 1) * LESSONS_PER_PAGE) + 1, to: Math.min(currentPage * LESSONS_PER_PAGE, filteredAndSortedLessons.length), total: filteredAndSortedLessons.length })}
+              {isSearchMode
+                ? t("lessons.searchFound", { total: searchTotal, count: searchResults.length })
+                : t("lessons.showing", { from: Math.min((currentPage - 1) * PAGE_SIZE + 1, filteredAndSortedLessons.length), to: Math.min(currentPage * PAGE_SIZE, filteredAndSortedLessons.length), total: filteredAndSortedLessons.length })
+              }
             </div>
           </div>
         )}
 
-        {isLoading ? (
+        {/* Main content */}
+        {(isLoading && !isSearchMode) || (isSearching && searchResults.length === 0) ? (
           <SkeletonLoader type="card" count={4} />
-        ) : lessons.length === 0 ? (
+        ) : isSearchMode && searchResults.length === 0 && !isSearching ? (
           <EmptyState
-            icon={searchQuery ? "🔍" : "📚"}
-            title={searchQuery ? t("lessons.notFound") : t("lessons.noLessons")}
-            description={searchQuery ? t("lessons.noResults", { query: searchQuery }) : t("lessons.checkBackSoon")}
+            icon="🔍"
+            title={t("lessons.notFound")}
+            description={t("lessons.noResults", { query: searchQuery })}
           />
-        ) : filteredAndSortedLessons.length === 0 ? (
+        ) : !isSearchMode && lessons.length === 0 ? (
+          <EmptyState
+            icon="📚"
+            title={t("lessons.noLessons")}
+            description={t("lessons.checkBackSoon")}
+          />
+        ) : !isSearchMode && filteredAndSortedLessons.length === 0 ? (
           <EmptyState
             icon="🔍"
             title={t("lessons.notFound")}
@@ -401,7 +529,7 @@ export default function LessonsPage() {
             {viewMode === "list" ? (
               /* List View */
               <div className="space-y-2">
-                {paginatedLessons.map((lesson, index) => {
+                {displayLessons.map((lesson) => {
                   const SubjectIcon = getSubjectIcon(lesson)
                   return (
                     <motion.div
@@ -418,13 +546,11 @@ export default function LessonsPage() {
                               <SubjectIcon className="w-6 h-6" />
                             </div>
 
-
                             <div className="flex-1 min-w-0">
                               <h3 className="font-sans font-bold text-lg group-hover:underline decoration-2 underline-offset-4 truncate text-foreground">
                                 {lesson.title}
                               </h3>
                             </div>
-
 
                             <div className="flex items-center gap-4 flex-shrink-0">
                               {lesson.difficulty && (
@@ -451,7 +577,7 @@ export default function LessonsPage() {
             ) : (
               /* Card View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {paginatedLessons.map((lesson, index) => {
+                {displayLessons.map((lesson) => {
                   const SubjectIcon = getSubjectIcon(lesson)
                   return (
                     <motion.div
@@ -482,11 +608,9 @@ export default function LessonsPage() {
                               </div>
                             </div>
 
-
                             <h3 className="font-sans font-bold text-base mb-3 line-clamp-2 group-hover:underline decoration-2 underline-offset-4 text-foreground flex-grow">
                               {lesson.title}
                             </h3>
-
 
                             <div className="flex justify-end">
                               <span className="text-foreground/60 group-hover:translate-x-1 transition-transform duration-200 font-bold text-xl">
@@ -502,8 +626,8 @@ export default function LessonsPage() {
               </div>
             )}
 
-
-            {totalPages > 1 && (
+            {/* Filter-only pagination (numbered) — hidden in search mode */}
+            {!isSearchMode && totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <ButtonEnhanced
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -548,6 +672,19 @@ export default function LessonsPage() {
                   className="px-4 py-2"
                 >
                   {t("common.next")}
+                </ButtonEnhanced>
+              </div>
+            )}
+
+            {/* Semantic search Load More */}
+            {isSearchMode && searchHasMore && (
+              <div className="flex justify-center mt-8">
+                <ButtonEnhanced
+                  onClick={loadMoreSearch}
+                  disabled={isSearching}
+                  className="mx-auto px-6 py-3"
+                >
+                  {isSearching ? t("lessons.loading") : t("lessons.loadMore")}
                 </ButtonEnhanced>
               </div>
             )}

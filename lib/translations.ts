@@ -163,6 +163,12 @@ const translations: Record<string, TranslationValue> = {
   "lessons.checkBackSoon": { en: "Check back soon for new learning content!", uk: "Повертайтесь незабаром за новим навчальним контентом!" },
   "lessons.tryChangeFilters": { en: "Try changing filters", uk: "Спробуйте змінити фільтри" },
   "lessons.loadError": { en: "Failed to load lessons", uk: "Не вдалося завантажити уроки" },
+  "lessons.searchError": { en: "Search error", uk: "Помилка пошуку" },
+  "lessons.loadMoreError": { en: "Failed to load more", uk: "Помилка завантаження" },
+  "lessons.searchWarming": { en: "Semantic search is loading — showing basic results", uk: "Семантичний пошук завантажується — показано базові результати" },
+  "lessons.loading": { en: "Loading...", uk: "Завантаження..." },
+  "lessons.loadMore": { en: "Load more", uk: "Показати ще" },
+  "lessons.searchFound": { en: "Found {{total}}, showing {{count}}", uk: "Знайдено {{total}}, показано {{count}}" },
 
   // Lesson Detail
   "lessonDetail.completed": { en: "Completed", uk: "Виконано" },
